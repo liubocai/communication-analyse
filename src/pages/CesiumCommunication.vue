@@ -35,15 +35,20 @@
 				<hr>
 				<label style="color:#4d4d4d;font-size: 15px;font-weight: bold;">已选电台点位</label>
 
-				<el-table class="fileTable" :data="radioPos" empty-text=" "
-					style=" width: 98%;height:300px;max-height: 300px;margin-top: 10px;" row-key="id" default-expand-all
-					stripe size="mini">
-
-					<el-table-column label="X" width="97" align="center" prop="lon">
+				<el-table :data="radioPos" empty-text=" "
+					style=" width: 98%;height:300px;max-height: 300px;margin-top: 10px;" default-expand-all
+					stripe size="mini"
+					row-key="index"
+					ref="multipleTable"
+					@selection-change="handleSelectionChange1">
+					<el-table-column type="selection"  width="55" :selectable="selectable1"/>
+					<el-table-column label="序号" width="50" align="center" type="index">
 					</el-table-column>
-					<el-table-column label="Y" width="97" align="center" prop="lat">
+					<el-table-column label="经度" width="97" align="center" prop="lon">
 					</el-table-column>
-					<el-table-column label="Z" width="60" align="center" prop="height">
+					<el-table-column label="纬度" width="97" align="center" prop="lat">
+					</el-table-column>
+					<el-table-column label="高程" width="60" align="center" prop="height">
 					</el-table-column>
 
 					<el-table-column align="right" label="操作" width="60">
@@ -63,12 +68,6 @@
 						</template>
 					</el-table-column>
 				</el-table>
-				<!-- <div style="display: flex;">
-					<el-button size="small" style="float: left;margin-top: 10px;margin-left: 4%;color:#00aaff"
-						@click="connectTo3pc">
-						获取通信态势
-					</el-button>
-				</div> -->
 				<div style="display: flex;">
 					<el-button size="small" style="width: 90px;margin-top: 10px;margin-left: 4%;color:#00aaff"
 						@click="StartSign">
@@ -80,7 +79,7 @@
 					</el-button>
 					<el-button size="small" style="float: left;margin-top: 10px;margin-left: 4%;color:#00aaff"
 						@click="uploadRadioPos">
-						上传
+						分析
 					</el-button>
 					<el-button size="small" style="float: left;margin-top: 10px;margin-left: 4%;color:#00aaff"
 						@click="SaveImg">
@@ -90,44 +89,36 @@
 			</div>
 			<hr>
 			<div>
-				<!-- <label style="font-size: 10px">
-					最大可用地面点数量：{{ this.useableGroundRadioNum }}
-					最大可用空中点数量：{{ this.useableAirRadioNum }}
-				</label> -->
-				<div style="font-size: 7px; float:left">
+				<div style="font-size: 11px; float:left">
 					最大可用地面点数量：<el-input-number v-model="maxGroundNum" :precision="0" :max="200" size="small"
 						:controls="false" style="width:50px" />
 					地面最大允许架高值：<el-input-number v-model="maxGroundHeight" :precision="2" :max="200" size="small"
 						:controls="false" style="width:70px;" />
-
 				</div>
-				<div style="font-size: 9px; float:left">
-					最大可用空中点数量：<el-input-number v-model="maxFlyNum" :precision="0" :max="200" size="small"
+				<div style="font-size: 11px; float:left">
+					最大可用空中点数量:<el-input-number v-model="maxFlyNum" :precision="0" :max="200" size="small"
 						:controls="false" style="width:50px" />
-					空中节点最大飞行高度 ：<el-input-number v-model="maxFlyHeight" :precision="2" :max="500" size="small"
+					空中节点最大飞行高度:<el-input-number v-model="maxFlyHeight" :precision="2" :max="500" size="small"
 						:controls="false" style="width:70px" />
 				</div>
-				<br>
-				<!-- <label style="font-size: 10px">
-					地面节点最大允许架高值：{{ this.maxGroundHeight }}
-					空中节点最大飞行高度：{{ this.maxFlyHeight }}
-				</label> -->
-
+				<div style="font-size: 11px; float:left">
+					通信覆盖范围：<el-input-number v-model="maxComputeRadioDistance" :precision="0" :max="10000" size="small"
+						:controls="false" style="width:70px" />
+					采样点间隔:<el-input-number v-model="samplePointInterval" :precision="2" :max="500" size="small"
+						:controls="false" style="width:70px" />
+				</div>
 			</div>
-			<!-- <label style="color:#4d4d4d;font-size: 15px;font-weight: bold;">计划派出电台</label>
 			<br>
-
-			<el-select v-model="chosenPrType" placeholder="选择类型" @change="handlePrtypeChange" style="width:100px">
-				<el-option v-for="item in prtypeOptions" :key="item.prtypeIndex" :label="item.title" :value="item.prtypeIndex"/>
-			</el-select>
-			<el-input-number v-model="prHeightNum" :precision="2" :step="0.1" :max="200" />
-			<el-button @click="submitPrRadioInfo">submit</el-button> -->
-
-			<el-button style="float: left;" @click="analysePlanRadio">补点分析</el-button>
+			<div>
+				<el-button style="float: left;" @click="analysePlanRadio">补点分析</el-button>
+				<el-button style="float: left;" @click="continueUpload">继续更新</el-button>
+			</div>
 
 			<el-table :data="planRadio" empty-text=" "
 				style=" width: 98%; height: 300px; max-height: 300px; margin-top: 10px; overflow-y: auto; font-size: small;"
-				row-key="index" default-expand-all stripe size="mini">
+				row-key="index" default-expand-all stripe size="mini"
+				@selection-change="handleSelectionChange2">
+				<el-table-column type="selection" width="55" :selectable="selectable2"/>
 				<el-table-column label="序号" width="50" align="center" type="index">
 				</el-table-column>
 				<el-table-column label="类型" width="50" align="center" prop="prtype">
@@ -146,7 +137,6 @@
 					</template>
 				</el-table-column>
 			</el-table>
-
 
 		</div>
 
@@ -178,8 +168,8 @@ import service from '@/userinfo/request';
 import destroy from 'readable-stream/lib/internal/streams/destroy';
 import { mcs8Client } from '@/sdk/mcs8Client.js';
 import SdkDemo from '@/sdk/sdkDemo.js'
-
-
+// import net from 'net'
+import io from 'socket.io-client';
 
 export default {
 	components: {
@@ -194,6 +184,11 @@ export default {
 	},
 	data() {
 		return {
+			maxComputeRadioDistance: 1000,
+			samplePointInterval: 5,
+
+			otherRadioIpGpsList:{}, //{"ip":{"lon":lon,"lat":lat,"height":height}}
+
 			msctoken: null,
 			hideIconUrl: './view.png',
 			changeIconUrl: './street.png',
@@ -205,7 +200,7 @@ export default {
 			rectangles: [],
 			rectangleEntities: [],
 			isRunning: false,
-			tifname: "guangxi_guilin",
+			tifname: "guangxi_guilin_dsmWGS84_5.tif",
 			done: 0,
 			processBarPercent: 0,
 
@@ -319,37 +314,45 @@ export default {
 		},
 		inviteCode(newValue) {
 			if (newValue == 1) {
-				this.viewer.terrainProvider = new Cesium.CesiumTerrainProvider({
-					url: "http://localhost:8082/data/terraintiles/guangxi_guilin_dsmtiles/",
-					// url: "http://localhost:9003/terrain/jRVxAu1Z/",
-					requestVertexNormals: true
-				})
-				this.tifname = "guangxi_guilin";
+				// this.viewer.terrainProvider = new Cesium.CesiumTerrainProvider({
+				// 	url: "http://localhost:8082/data/terraintiles/guangxi_guilin_dsmtiles/",
+				// 	// url: "http://localhost:8080/terrain/guangxi_guilin_dsmtiles/",
+				// 	requestVertexNormals: true
+				// })
+				// this.viewer.camera.flyTo({
+				// 	destination: this.Cesium.Cartesian3.fromDegrees(110.43, 25.31, 10000),
+				// 	duration: 1.5
+				// })
+				this.viewer.scene.primitives.show = true;
 				this.viewer.camera.flyTo({
-					destination: this.Cesium.Cartesian3.fromDegrees(110.43, 25.31, 200),
+					destination: new Cesium.Cartesian3.fromDegrees(110.19480, 25.28473, 123.15),
 					duration: 1.5
 				})
+				this.tifname = "guangxi_guilin_dsmWGS84_5.tif";
+				
 			} else if (newValue == 2) {
 				this.viewer.terrainProvider = new Cesium.CesiumTerrainProvider({
 					url: "http://localhost:8082/data/terraintiles/guangxi_nanning_dsmtiles/",
-					// url: "http://localhost:9003/terrain/P7l7gB2a/",
+					// url: "http://localhost:8080/terrain/guangxi_nanning_dsmtiles/",
+
 					requestVertexNormals: true
 				})
-				this.tifname = "guangxi_nanning";
+				this.tifname = "guangxi_nanning_dsmCGCS2k.tif";
 				this.viewer.camera.flyTo({
-					destination: this.Cesium.Cartesian3.fromDegrees(108.33, 22.80, 200),
+					destination: this.Cesium.Cartesian3.fromDegrees(108.33, 22.80, 10000),
 					duration: 1.5
 				})
 			} else if (newValue == 3) {
 				this.viewer.terrainProvider = new Cesium.CesiumTerrainProvider({
 					url: 'http://localhost:8082/data/terraintiles/wuhan_dsmtiles/',
+					// url: 'http://localhost:8080/terrain/wuhan_dsmtiles/',
 					requestVertexNormals: true
 				})
 				this.viewer.camera.flyTo({
-					destination: this.Cesium.Cartesian3.fromDegrees(114.35, 30.52, 200),
+					destination: this.Cesium.Cartesian3.fromDegrees(114.35, 30.52, 10000),
 					duration: 1.5
 				})
-				this.tifname = "wuhan_dsm_114"
+				this.tifname = "wuhan_dsm_114_dsmCGCS2k_30.tif"
 			}
 		}
 	},
@@ -389,12 +392,108 @@ export default {
 
 	},
 	methods: {
+		async testnet(){
+			// 1.登录获取token
+			// var token = "";
+			// await axios.get(
+			// 		`http://192.168.5.61/api/wrtmng/1/user/login?username=admin&password=admin`).then(
+			// 			(res) =>{
+			// 				token = res.result.token;
+			// 				console.log(res.result.token);
+			// 			}
+			// 		)
+			// axios.get(
+			// 	`http://192.168.5.61/api/wrtmng/1/dev/status?&name=io.gnss&args=mesh&token=${token}`.then((res)=>{
+			// 		console.log(res.result.status.devices[0].gnss);
+			// 	})
+			// )
+			// 2.获取gps	
+			var that = this		
+			await axios.get(`${this.$store.state.serverURL}/testtcp2?`).then((res)=>{
+				console.log(res)
+				that.otherRadioIpGpsList = res.data;
+
+			})
+
+
+		},
+		setRowSelected(row) {
+			// 通过ref引用表格，并使用toggleRowSelection方法设置某行为选中状态
+			for(var i=0; i<this.radioPos.length; i++){
+				this.$refs.multipleTable.toggleRowSelection(this.radioPos[i], true);
+			}
+		},
+		selectable1(row, index){
+			if(this.rectangleEntities.length == 0){
+				return false;
+			}else{
+				return true;
+			}
+		},
+		selectable2(row, index){
+			if(this.planRadio.length == 0){
+				return false;
+			}else{
+				return true;
+			}
+		},
+
+		handleSelectionChange1(val){
+			if(this.rectangleEntities.length == 0){
+				return;
+			}
+			var selectedRows = val.map(row => this.radioPos.indexOf(row));
+			
+			for(var i=0; i<this.radioPos.length; i++){
+				if(selectedRows.indexOf(i) !== -1){
+					this.rectangleEntities[i].show = true;
+				}else{
+					this.rectangleEntities[i].show = false;
+				}
+				// this.rectangleEntities[selectedRows[i]].show = !this.rectangleEntities[i].show;				
+			}
+		},
+		handleSelectionChange2(val){
+			if(this.rectangleEntities.length == 0 || this.planRadio.length == 0){
+				return;
+			}
+			var selectedRows = val.map(row => this.radioPos.indexOf(row));
+			var lenOfAll = this.rectangleEntities.length;
+			var lenOfPlan = this.planRadio.length;
+			for(var i=lenOfAll - lenOfPlan; i<lenOfAll; i++){				
+				let rowIdx = i - (lenOfAll-lenOfPlan)
+				if(selectedRows.indexOf(rowIdx) !== -1){
+					this.rectangleEntities[i].show = true;
+				}else{
+					this.rectangleEntities[i].show = false;
+				}
+				// this.rectangleEntities[selectedRows[i]].show = !this.rectangleEntities[i].show;				
+			}
+		},
+
+		continueUpload(){
+			if(this.isRunning || this.isAnalying){
+				alert("后台还在计算，请稍后")
+				return;
+			}
+			console.log("重新开始态势更新")
+			this.planRadio = []
+			this.lines = []
+			this.rectangles = []
+			this.ReloadAllMarkers()
+			this.isAnalying = false
+			this.isRunning = false
+			this.selectAndUpload()
+			
+		},
+
+
 		//https://192.168.5.100:7715/api/v1/ext/DevTree?token=f9b052102e84d5f47beb72232cb87fa1ab353e263f2939145abf05b96e3c36c616dfc7dcb823b0f359f4a11140ecfb033b682ac4ad75a377b224237bfe177d51d046875a16dfb756bd0c93cd2ead6094
 		//https://192.168.5.100:7715/api/v1/ext/DevList?enterId=20000000&groupId=30000000
 		getDevList() {
 			var that = this;
 			if(this.sdkclient.mConnected){
-				console.log("mcstoken", this.sdkclient.token)
+			
 				this.msctoken = this.sdkclient.token;
 				axios.get(
 					`${this.gatewayUrl.replace("gateway", "")}/api/v1/ext/DevTree?token=${this.msctoken}`).then(
@@ -402,12 +501,13 @@ export default {
 							var specificSubstring = "132";
 							const regex = new RegExp(`^.{10}${specificSubstring}.{7}$`);
 							if (res.status == 0 || res.status == 200){
+						
 								var content = res.data.content;
 								for (const item of content){
 									var data = item.data;
 									if("deviceId" in data){ //是设备
 										var str = data["deviceId"]
-										if(str.length==20 && regex.test(str)) //并且是
+										if(str.length==20 && regex.test(str)) //并且是电台设备
 										that.devNameDict[str] = data["deviceName"];
 									}
 								}
@@ -423,22 +523,29 @@ export default {
 				this.nanningStreetLayer = this.viewer.scene.imageryLayers.addImageryProvider(
 					new Cesium.UrlTemplateImageryProvider({
 						url: 'http://localhost:8082/data/imagetiles/nanningstreet/{z}/{x}/{y}.png',
+						// url: 'http://localhost:8080/imagetiles/nanningstreet/{z}/{x}/{y}.png',
+
 						transparent: true,
 						color: Cesium.Color.WHITE.withAlpha(0.2),
+					
 					})
 				);
 				this.guilinStreetLayer = this.viewer.scene.imageryLayers.addImageryProvider(
 					new Cesium.UrlTemplateImageryProvider({
+						// url: 'http://localhost:8080/imagetiles/guilinstreet/{z}/{x}/{y}.png',
 						url: 'http://localhost:8082/data/imagetiles/guilinstreet/{z}/{x}/{y}.png',
 						transparent: true,
 						color: Cesium.Color.WHITE.withAlpha(0.2),
+						
 					})
 				);
 				this.wuhanStreetLayer = this.viewer.scene.imageryLayers.addImageryProvider(
 					new Cesium.UrlTemplateImageryProvider({
+						// url: 'http://localhost:8080/imagetiles/wuhanstreet/{z}/{x}/{y}.png',
 						url: 'http://localhost:8082/data/imagetiles/wuhanstreet/{z}/{x}/{y}.png',
 						transparent: true,
 						color: Cesium.Color.WHITE.withAlpha(0.2),
+				
 					})
 				);
 			} else {
@@ -446,7 +553,6 @@ export default {
 				this.viewer.scene.imageryLayers.remove(this.wuhanStreetLayer);
 				this.viewer.scene.imageryLayers.remove(this.nanningStreetLayer);
 				this.viewer.scene.imageryLayers.remove(this.guilinStreetLayer);
-
 			}
 
 		},
@@ -565,7 +671,6 @@ export default {
 			});
 		},
 		handleDelete(index, row) {
-
 			this.radioPos.splice(index, 1)
 			this.radioPosLength = this.radioPosLength - 1
 			this.ReloadAllMarkers()
@@ -614,14 +719,25 @@ export default {
 
 		},
 		HideImg() {
+			//图标切换
 			if(self.hideIconUrl != './view.png'){
 				self.hideIconUrl = './uav1.png';
 			}else{
 				self.hideIconUrl = './hide.png';
 			}
+
 			var size = this.rectangleEntities.length;
+			var isAnyShow = false;
+			//检查是否有图片是在显示状态
 			for(var i=0; i<size; i++){
-				this.rectangleEntities[i].show = !this.rectangleEntities[i].show;
+				if(this.rectangleEntities[i].show == true){
+					isAnyShow = true;
+					break;
+				}
+			}
+			//如果是则全为false，否则就全是设为true
+			for(var i=0; i<size; i++){
+				this.rectangleEntities[i].show = !isAnyShow;
 			}
 		},
 
@@ -638,7 +754,7 @@ export default {
 				imageurl = './uav1.png'
 			}
 			if( type == "marker"){
-				imageurl = './Marker.png'
+				imageurl = './位置.png'
 			}
 			let x = this.viewer.entities.add({
 				name: 'radio',
@@ -648,17 +764,17 @@ export default {
 				position: pointPostion,
 				label: {
 					text: label,
-					font: '14px sans-serif', // 字体样式
+					font: '16px sans-serif', // 字体样式
 					fillColor: Cesium.Color.YELLOW, // 文本填充颜色
 					outlineColor: Cesium.Color.BLACK, // 文本轮廓颜色
 					outlineWidth: 2, // 文本轮廓宽度
 					style: Cesium.LabelStyle.FILL_AND_OUTLINE, // 文本样式
-					pixelOffset: new Cesium.Cartesian2(0, -30) // 文本位置偏移
+					pixelOffset: new Cesium.Cartesian2(0, 0) // 文本位置偏移
 				},
 				billboard: {
 					image: imageurl,
 					verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-					scale: 0.5,
+					scale: 1,
 				},
 			});
 			this.radioEntities.push(x)
@@ -683,7 +799,7 @@ export default {
 			this.lineEntities = []
 			this.rectangleEntities = []
 			for (let i = 0; i < this.radioPos.length; i++) {
-				this.AddSignPoint(Number(this.radioPos[i].lon), Number(this.radioPos[i].lat), Number(this.radioPos[i].height), "", this.devOnlineListName[i])
+				this.AddSignPoint(Number(this.radioPos[i].lon), Number(this.radioPos[i].lat), Number(this.radioPos[i].height), "marker", this.devOnlineListName[i])
 			}
 			for (let i = 0; i < this.planRadio.length; i++) {
 				this.AddSignPoint(Number(this.planRadio[i].lon), Number(this.planRadio[i].lat), Number(this.planRadio[i].height), this.planRadio[i].prtype, "补点")
@@ -707,7 +823,7 @@ export default {
 						coordinates: new Cesium.Rectangle.fromDegrees(rectCoor[0], rectCoor[1], rectCoor[2], rectCoor[3]),
 						material: new Cesium.ImageMaterialProperty({
 							image: "http://127.0.0.1:8092/resultimages/result_img" + i + ".png", // 替换为你自己的图片路径
-							color: Cesium.Color.WHITE.withAlpha(0.2),
+							color: Cesium.Color.WHITE.withAlpha(0.6), //0.2
 							transparent: true,
 						})
 					}
@@ -732,12 +848,15 @@ export default {
 				console.log('没有在线设备');
 				return
 			}
+			this.setRowSelected();
 			this.isRunning = true;
 			var that = this
 			// that.imgLoading = true
 			let send = {
 				radioPos: this.radioPos,
 				tifname: this.tifname,
+				samplePointInterval: this.samplePointInterval,
+				maxComputeRadioDistance: this.maxComputeRadioDistance,
 			}
 			that.$store.state.upLoadProgress = 0
 			const jsonString = JSON.stringify(send)
@@ -756,6 +875,7 @@ export default {
 							that.resultImgName = res.data.url;
 							that.rectangles = res.data.rectangles;
 							that.updateResultImgAndMarkers();
+
 						}
 						else {
 							this.$message({
@@ -788,7 +908,7 @@ export default {
 
 		updateResultImgAndMarkers() {
 			this.ReloadAllMarkers();
-			//this.viewer.scene.render();
+			this.viewer.scene.render();
 		},
 
 		getDeviceOnlineList() {
@@ -853,6 +973,15 @@ export default {
 					tempPos.push(tpos);
 				}
 			}
+			//0620新需求，添加另一种方式获得电台坐标的数据
+			this.testnet()
+			
+			for(let key in this.otherRadioIpGpsList){
+				tempName.push(key)
+				tempPos.push(this.otherRadioIpGpsList[key])
+			}
+
+
 			this.radioPos = tempPos;
 			this.devOnlineListName = tempName;
 			this.uploadRadioPos();
@@ -862,8 +991,10 @@ export default {
 
 		printDevOnlineList() {
 			// console.log("dev print", this.devOnlineList);
-			// console.log("dev print2", this.deviceOnlineGpsList);
-			console.log("dev print3 name dict", this.devNameDict);
+			console.log("dev print3 deviceOnlineGpsList", this.deviceOnlineGpsList);
+			console.log("dev print3 devOnlineListName", this.devOnlineListName);
+			console.log("dev print3 radiopos", this.radiopos);
+			console.log("dev print3 other", this.otherRadioIpGpsList);
 			
 			setTimeout(this.printDevOnlineList, 5000);
 		},
@@ -913,6 +1044,8 @@ export default {
 				maxFlyHeight: this.maxFlyHeight,
 				maxFlyNum: this.maxFlyNum,
 				tifname: this.tifname,
+				samplePointInterval: this.samplePointInterval,
+				maxComputeRadioDistance: this.maxComputeRadioDistance,
 			}
 			var that = this
 			sendData = JSON.stringify(sendData)
@@ -942,18 +1075,12 @@ export default {
 						that.lines = res.data.lines;
 						that.rectangles = res.data.rectangles;
 						that.updateResultImgAndMarkers();
-						// setTimeout(function () {
-						// 	console.log("重新开始态势更新")
-						// 	that.planRadio = []
-						// 	that.lines = []
-						// 	that.rectangles = []
-						// 	that.updateResultImgAndMarkers()
-						// 	that.isAnalying = false
-						// 	that.selectAndUpload()
-						// }, 30000)
+						that.isAnalying = false;
+
 					}
 					else {
 						that.isRunning = false;
+						that.isAnalying = false;
 						this.$message({
 							showClose: true,
 							message: '服务器错误,请稍后',
@@ -974,6 +1101,7 @@ export default {
 			var that = this
 			//查看器
 
+
 			var viewer = new Cesium.Viewer('cesiumContainer', {
 				navigationHelpButton: false, //是否显示帮助信息控件
 				fullscreenButton: false, //全屏显示
@@ -988,25 +1116,67 @@ export default {
 					url: Cesium.buildModuleUrl('Assets/Textures/NaturalEarthII')
 				})
 			});
+
+			//添加3dtiles
+			let tileset = new Cesium.Cesium3DTileset({
+				// url: 'http://localhost:8080/data/3DTiles/guangxiguilin/tileset.json',
+				url: 'http://localhost:8082/data/3DTiles/gx/tileset.json',
+				// url: 'http://localhost:9003/model/toCSgzpO1/tileset.json',
+				// url: this.$config.tilesurl1,
+				//【重要】数值加大，能让最终成像变模糊
+				// ScreenSpaceErrorFactor: 16,
+				// skipLevels: 1,
+				// immediatelyLoadDesiredLevelOfDetail: false,
+				// cullWithChildrenBounds: true,
+				// skipLevelOfDetail: true, //开启跳级加载
+				// loadSiblings: true,
+				// maximumScreenSpaceError: 32,
+				// //这个参数默认是false，同等条件下，叶子节点会优先加载。但是Cesium的tile加载优先级有很多考虑条件，
+				// //这个只是其中之一，如果skipLevelOfDetail=false，这个参数几乎无意义。所以要配合skipLevelOfDetail=true来使用，
+				// //此时设置preferLeaves=true。这样我们就能最快的看见符合当前视觉精度的块，对于提升大数据以及网络环境不好的前提下有一点点改善意义。
+				// preferLeaves: true,
+				// //【重要】内存建议显存大小的50%左右，内存分配变小有利于倾斜摄影数据回收，提升性能体验
+				// maximumMemoryUsage: 4128,
+				// skipScreenSpaceErrorFactor: 8,
+				//控制切片视角显示的数量，可调整性能
+				// maximumScreenSpaceError: 2,//最大的屏幕空间误差
+				// maximumNumberOfLoadedTiles: 100000, //最大加载瓦片个数
+
+				//xhk参数
+				baseScreenSpaceError:4096,
+				skipScreenspaceErrorFactor:8,
+				skipLevels:1,
+				immediatelyLoadDesiredLevelofDetail:false,
+				loadSiblings: false,
+				cullWithChildrenBounds:true,
+				skipLevelofDetail:true,//开启跳级加载
+				preferLeaves: true,
+				maximumMemoryUsage:512,
+							})
+			viewer.scene.primitives.show = false;
+			viewer.scene.primitives.add(tileset)
+			viewer.camera.flyTo({
+				destination: new Cesium.Cartesian3.fromDegrees(110.19480, 25.28473, 300),
+				duration: 1.5
+			})
+
+
+		
+
 			//添加在线dsm。
 			// viewer.terrainProvider=Cesium.createWorldTerrain();
-			//添加离线dsm，依托cesium ion发布
-			// viewer.terrainProvider = new Cesium.CesiumTerrainProvider({
-			// 	url: 'http://localhost:8080/terrain/wuhan_dsmtiles/',
-			// 	// url: "http://localhost:8080/terrain/guangxi_guilin_dsmtiles/",
-			// 	// url: "http://localhost:9003/terrain/P7l7gB2a/",
-			// 	requestVertexNormals: true
-			// })
-			// //添加结果切片
+			//添加卫星影像切片
 			viewer.scene.imageryLayers.addImageryProvider(
 				new Cesium.UrlTemplateImageryProvider({
+					// url: 'http://localhost:8080/imagetiles/guilin1/{z}/{x}/{y}.png',
 					url: 'http://localhost:8082/data/imagetiles/guilin1/{z}/{x}/{y}.png',
 					transparent: true,
-					color: Cesium.Color.WHITE.withAlpha(0.2),
+					color: Cesium.Color.WHITE.withAlpha(0.2),					
 				})
 			);
 			viewer.scene.imageryLayers.addImageryProvider(
 				new Cesium.UrlTemplateImageryProvider({
+					// url: 'http://localhost:8080/imagetiles/guilin2/{z}/{x}/{y}.png',
 					url: 'http://localhost:8082/data/imagetiles/guilin2/{z}/{x}/{y}.png',
 					transparent: true,
 					color: Cesium.Color.WHITE.withAlpha(0.2),
@@ -1014,6 +1184,7 @@ export default {
 			);
 			viewer.scene.imageryLayers.addImageryProvider(
 				new Cesium.UrlTemplateImageryProvider({
+					// url: 'http://localhost:8080/imagetiles/nanning/{z}/{x}/{y}.png',
 					url: 'http://localhost:8082/data/imagetiles/nanning/{z}/{x}/{y}.png',
 					transparent: true,
 					color: Cesium.Color.WHITE.withAlpha(0.2),
@@ -1021,13 +1192,14 @@ export default {
 			);
 			viewer.scene.imageryLayers.addImageryProvider(
 				new Cesium.UrlTemplateImageryProvider({
+					// url: 'http://localhost:8080/imagetiles/wuhan/{z}/{x}/{y}.png',
 					url: 'http://localhost:8082/data/imagetiles/wuhan/{z}/{x}/{y}.png',
 					transparent: true,
 					color: Cesium.Color.WHITE.withAlpha(0.2),
+					
 				})
 			);
-			//设置影像切片透明度
-			// resultlayer.alpha = 0.2; // 设置透明度为 0.5
+
 
 			//双击鼠标左键清除默认事件
 			viewer._cesiumWidget._creditContainer.style.display = "none"; // 隐藏版权
@@ -1036,18 +1208,30 @@ export default {
 
 			var handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
 			handler.setInputAction(function (evt) {
-				// 返回一个ray和地球表面的一个交点的Cartesian3坐标。
-				let ray = viewer.camera.getPickRay(evt.position);
-				let cartesian = viewer.scene.globe.pick(ray, viewer.scene);
-				// // 空间坐标转世界坐标(弧度)
-				let cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+				//优先判断是否拾取到3dtiles模型
+				let pickedObject = viewer.scene.pick(evt.position);				
+				// 判断是否拾取到模型
+				if (viewer.scene.pickPositionSupported && Cesium.defined(pickedObject)){
+					var cartesian = viewer.scene.pickPosition(evt.position);
+					// 是否获取到空间坐标
+					if (Cesium.defined(cartesian)){
+						// // 空间坐标转世界坐标(弧度)
+						var cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+					}
+				}else{ //没有3dtiles模型则返回一个地形高度
+					// 返回一个ray和地球表面的一个交点的Cartesian3坐标。
+					let ray = viewer.camera.getPickRay(evt.position);
+					cartesian = viewer.scene.globe.pick(ray, viewer.scene);
+					// // 空间坐标转世界坐标(弧度)
+					cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+				}
 				// 弧度转为角度（经纬度）
 				let lon = Cesium.Math.toDegrees(cartographic.longitude).toFixed(6);  //经度值
 				let lat = Cesium.Math.toDegrees(cartographic.latitude).toFixed(6); //纬度值
 				// 地形高度(下面两个二选一就行)
 				let height = cartographic.height.toFixed(2);
 				let height2 = viewer.scene.globe.getHeight(cartographic)
-				console.log(lon, lat, height, height2)
+				console.log(lon, lat, height,height2, "from 3dtiles")
 				if (that.signMode) {
 					let tmp_Point = {
 						lon: lon,
@@ -1069,40 +1253,41 @@ export default {
 	mounted() {
 		this.init();
 		// //链接网关
-		this.sdkclient = new SdkDemo();
-		this.sdkclient.connect(this.gatewayUrl, this.username, this.password, null, null)
-		//获取设备名字
-		setTimeout(this.getDevList, 500);
-		//获取在线设备列表
-		setTimeout(this.getDeviceOnlineList, 1000);
-		//添加监听器
-		this.sdkclient.addObserver('gpsUpload', msg => {
-			if (msg.method == 'gpsUpload') {
-				var data = msg.data;
-				var id = data.devId;
-				if (id in this.devNameDict) {
-					if (!isNaN(parseFloat(data.lng))) {
-						var lng = parseFloat(data.lng)
-						var lat = parseFloat(data.lat)
-						if(lat == 0 || lng ==0){
-							return;
-						}
-						var cartographic = this.Cesium.Cartographic.fromDegrees(lng, lat);
-						var height = 190;
-						height = this.viewer.scene.globe.getHeight(cartographic).toFixed(2)
-						console.log("height", height)
-						if (height == null || height < 30) {
-							height = 190;
-						}
-						var tpos = { lon: lng, lat: lat, height: height };
-						this.deviceOnlineGpsList[id] = tpos;
-					}
-				}
-			}
-		})
-		// //开启动态更新坐标函数	
-		this.printDevOnlineList();
-		//开启动态上传坐标进行态势感知函数
+		// this.sdkclient = new SdkDemo();
+		// this.sdkclient.connect(this.gatewayUrl, this.username, this.password, null, null)
+
+		// //获取设备名字
+		// setTimeout(this.getDevList, 500);
+		// //获取在线设备列表
+		// setTimeout(this.getDeviceOnlineList, 1000);
+		// //添加监听器
+		// this.sdkclient.addObserver('gpsUpload', msg => {
+		// 	if (msg.method == 'gpsUpload') {
+		// 		var data = msg.data;
+		// 		var id = data.devId;
+		// 		if (id in this.devNameDict) {
+		// 			if (!isNaN(parseFloat(data.lng))) {
+		// 				var lng = parseFloat(data.lng)
+		// 				var lat = parseFloat(data.lat)
+		// 				if(lat == 0 || lng ==0){
+		// 					return;
+		// 				}
+		// 				var cartographic = this.Cesium.Cartographic.fromDegrees(lng, lat);
+		// 				var height = 190;
+		// 				height = this.viewer.scene.globe.getHeight(cartographic).toFixed(2)
+		// 				console.log("height", height)
+		// 				if (height == null || height < 30) {
+		// 					height = 190;
+		// 				}
+		// 				var tpos = { lon: lng, lat: lat, height: height };
+		// 				this.deviceOnlineGpsList[id] = tpos;
+		// 			}
+		// 		}
+		// 	}
+		// })
+		// // //开启动态更新坐标函数	
+		// this.printDevOnlineList();
+		// // 开启动态上传坐标进行态势感知函数
 		// this.selectAndUpload();
 	},
 
