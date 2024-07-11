@@ -155,7 +155,7 @@
 				</el-button>
 
 				<span style="position: absolute;right: 20px;bottom: 5px;z-index: 1;color: #ffffff;">{{ currentMousePos1
-					}},{{ currentMousePos2 }}</span>
+					}}{{ currentMousePos2 }}</span>
 			</div>
 
 

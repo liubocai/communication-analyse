@@ -7,6 +7,7 @@
       z-index: 502;
       width: 100%;
       height: 100%;
+      margin:0px;
       position: absolute;
     "
   >
@@ -77,7 +78,7 @@
       <el-table
         :data="radioPos"
         empty-text=" "
-        style="width: 98%; height: 300px; max-height: 300px; margin-top: 10px"
+        style="width: 100%; height: 300px; max-height: 300px; margin-top: 10px; background-color: #19284b; font-size: small;"
         default-expand-all
         stripe
         size="mini"
@@ -223,12 +224,13 @@
       :data="planRadio"
       empty-text=" "
       style="
-        width: 98%;
+        width: 100%;
         height: 300px;
         max-height: 300px;
         margin-top: 10px;
         overflow-y: auto;
         font-size: small;
+        background-color: #19284b;
       "
       row-key="index"
       default-expand-all
@@ -285,7 +287,7 @@
         </el-icon>
       </el-button>
 
-      <span
+      <!-- <span
         style="
           position: absolute;
           right: 20px;
@@ -293,8 +295,8 @@
           z-index: 1;
           color: #ffffff;
         "
-        >{{ currentMousePos1 }},{{ currentMousePos2 }}</span
-      >
+        >{{ currentMousePos1 }}{{ currentMousePos2 }}</span
+      > -->
     </div>
   </div>
 </template>
@@ -1463,7 +1465,7 @@ export default {
   margin-left: 20%;
   height: calc(100vh - 59px);
   z-index: 0;
-  width: 80%;
+  width: 79%;
   position: absolute;
 }
 
@@ -1476,9 +1478,10 @@ export default {
   height: calc(100vh - 59px);
   left: 0px;
   position: absolute;
-
+  color:aliceblue;
   overflow: hidden;
   display: inline-block;
+  margin-left: 6px;
 }
 
 .hide .el-upload--picture-card {

@@ -37,7 +37,7 @@
 
         <div v-show="show0"  >
           <el-card style="width: 100%;height: 20em; background-color: white;border: 0;" shadow="never">
-            <p class="platformIntro">🦊🌸🌐<br>调绘应急通信部署一体化平台<br>简洁 高效 创新 友好<br></p>
+            <p class="platformIntro">🦊🌸🌐<br>通信态势分析一体化平台<br>简洁 高效 创新 友好<br></p>
 
           </el-card>
         </div>
