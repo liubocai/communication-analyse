@@ -139,7 +139,7 @@ export default {
 <style scoped>
 .el-menu {
 	padding-left: 23px;
-	background-color: black !important;
+	background-color: #19284b !important;
 }
 
 .logo {

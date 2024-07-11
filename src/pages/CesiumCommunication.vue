@@ -110,6 +110,20 @@
             </el-button>
           </template>
         </el-table-column>
+
+        <el-table-column align="right" label="选择" width="60">
+          <template #default="scope">
+            <el-select v-model="value" placeholder="Select" style="width: 240px">
+            <el-option
+              v-for="item in optionsForTupu"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+          </template>
+        </el-table-column>
+
         <el-table-column>
           <template #default="scope">
             <el-button
@@ -155,8 +169,10 @@
     </div>
     <hr />
     <div style="display: flex; flex-direction: column">
-      <div style="font-size: 11px; float: left">
-        最大可用地面点数量：<el-input-number
+      <div style="font-size: 11px; display: flex;justify-content: space-around;">
+        <div class='text-min'>
+          <span class="text-span">最大可用地面点数量</span>
+          <el-input-number
           v-model="maxGroundNum"
           :precision="0"
           :max="200"
@@ -164,7 +180,11 @@
           :controls="false"
           style="width: 50px"
         />
-        地面最大允许架高值：<el-input-number
+        </div>
+     
+       <div class='text-min'>
+        <span class="text-span">地面最大允许架高值</span>
+        <el-input-number
           v-model="maxGroundHeight"
           :precision="2"
           :max="200"
@@ -172,42 +192,45 @@
           :controls="false"
           style="width: 70px"
         />
+       </div>
       </div>
-      <div style="font-size: 11px; float: left">
-        最大可用空中点数量:<el-input-number
+      <div style="font-size: 11px; display: flex;justify-content: space-around;">
+        <div class='text-min'> <span class="text-span">最大可用空中点数量</span><el-input-number
           v-model="maxFlyNum"
           :precision="0"
           :max="200"
           size="small"
           :controls="false"
           style="width: 50px"
-        />
-        空中节点最大飞行高度:<el-input-number
+        /></div>
+       <div class='text-min'> <span class="text-span">空中节点最大飞行高度</span><el-input-number
           v-model="maxFlyHeight"
           :precision="2"
           :max="500"
           size="small"
           :controls="false"
           style="width: 70px"
-        />
+        /></div>
+        
       </div>
-      <div style="font-size: 11px; float: left">
-        通信覆盖范围：<el-input-number
+      <div style="font-size: 11px;display: flex;justify-content: space-around;">
+        <div class='text-min'> <span class="text-span">通信覆盖范围</span><el-input-number
           v-model="maxComputeRadioDistance"
           :precision="0"
           :max="10000"
           size="small"
           :controls="false"
           style="width: 70px"
-        />
-        采样点间隔:<el-input-number
+        /></div>
+        <div class='text-min'> <span class="text-span">采样点间隔</span><el-input-number
           v-model="samplePointInterval"
           :precision="2"
           :max="500"
           size="small"
           :controls="false"
           style="width: 70px"
-        />
+        /></div>
+       
       </div>
     </div>
 
@@ -260,8 +283,21 @@
           </el-button>
         </template>
       </el-table-column>
-    </el-table>
+    </el-table>   
+
+    <div style="display: flex; justify-content: space-around; margin-top: 5px">
+      <el-button style="float: left" @click="showTupu"
+        >知识图谱</el-button
+      >
+    </div>
+
   </div>
+
+
+
+  
+    <tupu style="position: absolute;width: 500px;height: 500px;left:450px;top:200px;z-index: 114514;" v-show=this.isShowTupu></tupu>
+  
 
   <div id="container" class="cesiumbox" style="">
     <div id="cesiumContainer" :style="cesiumStyle">
@@ -301,6 +337,7 @@
   </div>
 </template>
 <script>
+import tupu from './tupu.vue'
 import axios from 'axios';
 import service from '@/userinfo/request';
 import destroy from 'readable-stream/lib/internal/streams/destroy';
@@ -311,6 +348,7 @@ import io from 'socket.io-client';
 
 export default {
   components: {
+    tupu
     // ElTable,
     // ElTableColumn,
     // ElInput,
@@ -322,6 +360,30 @@ export default {
   },
   data() {
     return {
+      optionsForTupu :[
+        {
+          value: 'Option1',
+          label: 'Option1',
+        },
+        {
+          value: 'Option2',
+          label: 'Option2',
+        },
+        {
+          value: 'Option3',
+          label: 'Option3',
+        },
+        {
+          value: 'Option4',
+          label: 'Option4',
+        },
+        {
+          value: 'Option5',
+          label: 'Option5',
+        },
+      ],
+
+      isShowTupu : false,
       maxComputeRadioDistance: 1000,
       samplePointInterval: 5,
 
@@ -376,6 +438,7 @@ export default {
         }
       ],
       inviteCode: '',
+      radioToEntity: {"节点1":"无人机1"},
       radioPos: [],
       radioPosLength: 0,
       rectangle: null,
@@ -519,6 +582,10 @@ export default {
     }
   },
   methods: {
+    showTupu(){
+      this.isShowTupu = ! this.isShowTupu;
+    },
+
     async testnet() {
       // 1.登录获取token
       // var token = "";
@@ -1457,6 +1524,15 @@ export default {
 </script>
 
 <style scoped>
+.text-span{
+  min-width: 130px;
+  display: inline-block;
+  line-height: 28px
+}
+.text-min{
+  text-align: left;
+  min-width: 50%;
+}
 #cesiumContainer {
   height: calc(100vh - 59px);
 }
@@ -1465,7 +1541,7 @@ export default {
   margin-left: 20%;
   height: calc(100vh - 59px);
   z-index: 0;
-  width: 79%;
+  width: 80%;
   position: absolute;
 }
 
@@ -1481,7 +1557,7 @@ export default {
   color:aliceblue;
   overflow: hidden;
   display: inline-block;
-  margin-left: 6px;
+  /* margin-left: 6px; */
 }
 
 .hide .el-upload--picture-card {

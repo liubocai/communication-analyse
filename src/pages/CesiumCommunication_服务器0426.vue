@@ -95,17 +95,23 @@
 					最大可用空中点数量：{{ this.useableAirRadioNum }}
 				</label> -->
 				<div style="font-size: 7px; float:left">
-					最大可用地面点数量：<el-input-number v-model="maxGroundNum" :precision="0" :max="200" size="small"
+					<div class="panel-text">
+						最大可用地面点数量：<el-input-number v-model="maxGroundNum" :precision="0" :max="200" size="small"
 						:controls="false" style="width:50px" />
 					地面最大允许架高值：<el-input-number v-model="maxGroundHeight" :precision="2" :max="200" size="small"
 						:controls="false" style="width:70px;" />
+					</div>
+					
 
 				</div>
-				<div style="font-size: 9px; float:left">
+				<div class="panel-text">
+					<div style="font-size: 9px; float:left">
 					最大可用空中点数量：<el-input-number v-model="maxFlyNum" :precision="0" :max="200" size="small"
 						:controls="false" style="width:50px" />
 					空中节点最大飞行高度 ：<el-input-number v-model="maxFlyHeight" :precision="2" :max="500" size="small"
 						:controls="false" style="width:70px" />
+					</div>
+			
 				</div>
 				<br>
 				<!-- <label style="font-size: 10px">
