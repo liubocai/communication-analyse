@@ -358,7 +358,7 @@ export default {
   data() {
     return {
       radioLinkTupu: [],
-      tupuDataList: [],
+      tupuDataList: null,
       optionsForTupu :[
         {
           value: 'Option1',
@@ -601,36 +601,39 @@ export default {
   },
   methods: {
     changeTupuOptions(){
-      console.log("this.tupuDataList", this.tupuDataList)
-      var temp = [];
-      var dataListChild = Array.prototype.slice.call(this.$refs.tupuchild.dataList) 
-      this.tupuDataList = this.$refs.tupuchild.dataList
-      console.log("test ref1", dataListChild.length)
-      console.log("test ref2", this.$refs.tupuchild.dataList.length)
-      for(let i=0; i<dataListChild.length; i++){
+      
+      // var temp = [];
+      // var dataListChild = Array.prototype.slice.call(this.$refs.tupuchild.dataList) 
+      
+      // this.tupuDataList = this.$refs.tupuchild.dataList
+      // console.log("this.tupuDataList", this.tupuDataList)
+      // console.log("test ref1", this.tupuDataList.length)
+      // for(let i=0; i<dataListChild.length; i++){
 
-        console.log(ele)
-        var node = this.tupuDataList[i];
-        let dict = {
-          value: node['name'],
-          label: node['name']
-        }
-        temp.push(dict);
-        // if(node["value"] != '1'){
-        //   temp.push({value: node['name'], label: node['name']});
-        // }
-      }
-      // this.optionsForTupu = temp;
-      console.log("optionsForTupu", this.optionsForTupu)
-      console.log("optionsForTupu", temp)
+      //   console.log(ele)
+      //   var node = this.tupuDataList[i];
+      //   let dict = {
+      //     value: node['name'],
+      //     label: node['name']
+      //   }
+      //   temp.push(dict);
+      //   // if(node["value"] != '1'){
+      //   //   temp.push({value: node['name'], label: node['name']});
+      //   // }
+      // }
+      // // this.optionsForTupu = temp;
+      // console.log("optionsForTupu", this.optionsForTupu)
+      // console.log("optionsForTupu", temp)
     },
 
     handleTupuSend(message){
-      this.tupuDataList = Array.from(message);
+      
+      this.tupuDataList = message;
+      console.log('this.tupuDataList',this.tupuDataList)
       // this.changeTupuOptions();  
       var temp = [];
-      for(var ele in this.tupuDataList){
-        console.log(ele)
+      for(let i =0;i<this.tupuDataList.length;i++){
+        console.log(this.tupuDataList[i])
         var node = this.tupuDataList[i];
         let dict = {
           value: node['name'],
@@ -1560,8 +1563,7 @@ export default {
     //获取在线设备列表
     setTimeout(this.getDeviceOnlineList, 1000);
     this.changeTupuOptions();
-    console.log("test ref", this.tupuDataList)
-    console.log("test ref", this.tupuDataList.length)
+
     // //添加监听器
     // this.sdkclient.addObserver('gpsUpload', msg => {
     // 	if (msg.method == 'gpsUpload') {

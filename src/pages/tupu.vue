@@ -155,6 +155,8 @@ export default {
     methods: {
         sendData(){
             console.log("has send")
+            console.log("this.dataList",this.dataList)
+            // console.log("this.dataList.length",this.dataList.length)
             this.$emit('sendTupuDataList', this.dataList);
         },
 
@@ -165,7 +167,7 @@ export default {
                     complete: parsedData => {
 
                         parsedData=parsedData.data
-
+                        let tmpList=[];
                         for (let i = 0; i < parsedData.length - 1; i++) {
 
                             let tmp = {
@@ -175,10 +177,11 @@ export default {
                                 value: parsedData[i][3],
                                 symbolSize: 50
                             }
-                            this.dataList.push(tmp)
-                            
+                            tmpList.push(tmp)
                         }
-                        console.log(this.dataList)
+                        this.dataList=tmpList
+                        console.log("==============2==================")
+                        console.log('this.dataList',this.dataList)
                     },
                 });
             })
@@ -228,7 +231,7 @@ export default {
                 myChart.setOption(this.option);
             }
         },1000)
-        this.sendData();
+        
 
     }
 }
