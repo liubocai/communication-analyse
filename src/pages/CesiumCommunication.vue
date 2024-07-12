@@ -113,7 +113,7 @@
 
         <el-table-column align="right" label="选择" width="120" >
           <template #default="scope">
-            <el-select v-model="value" placeholder="Select" @click.prevent="handleChooseTupuItem(scope.$index, scope.row)">
+            <el-select v-model=this.radioLinkTupu[scope.$index] placeholder="Select" @click.prevent="handleChooseTupuItem(scope.$index, scope.row)">
             <el-option
               v-for="item in optionsForTupu"
               :key="item.value"
@@ -292,11 +292,8 @@
     </div>
 
   </div>
-
-
-
   
-    <tupu style="position: absolute;width: 500px;height: 500px;left:450px;top:200px;z-index: 114514;" v-show=this.isShowTupu></tupu>
+    <tupu style="position: absolute;width: 500px;height: 500px;left:450px;top:200px;z-index: 114514;" v-show=this.isShowTupu @sendTupuDataList="handleTupuSend" ref="tupuchild"></tupu>
   
 
   <div id="container" class="cesiumbox" style="">
@@ -360,6 +357,8 @@ export default {
   },
   data() {
     return {
+      radioLinkTupu: [],
+      tupuDataList: [],
       optionsForTupu :[
         {
           value: 'Option1',
@@ -388,7 +387,7 @@ export default {
       samplePointInterval: 5,
 
       otherRadioIpGpsList: {}, //{"ip":{"lon":lon,"lat":lat,"height":height}}
-
+      radioLinkTupuEntity: [], //['应急人员1'， '无人机2'] 序号按照radioPos中的序号
       msctoken: null,
       hideIconUrl: './view.png',
       changeIconUrl: './street.png',
@@ -500,6 +499,25 @@ export default {
     };
   },
   watch: {
+    tupuDataList(newValue){
+      // console.log("watch tupuData", newValue)
+      // var temp = [];
+      // for(let i=0; i<newValue.length; i++){
+      //   console.log(i)
+      //   var node = newValue[i];
+      //   let dict = {
+      //     value: node['name'],
+      //     label: node['name']
+      //   }
+      //   temp.push(dict);
+      //   // if(node["value"] != '1'){
+      //   //   temp.push({value: node['name'], label: node['name']});
+      //   // }
+      // }
+      // this.optionsForTupu = temp;
+      // console.log("optionsForTupu", this.optionsForTupu)
+      // console.log("optionsForTupu", temp)
+    },
     resultImgName(newValue) {
       // this.entityResult.rectangle.material = newValue;
       // this.entityResult.rectangle.material.image = newValue;
@@ -582,8 +600,58 @@ export default {
     }
   },
   methods: {
+    changeTupuOptions(){
+      console.log("this.tupuDataList", this.tupuDataList)
+      var temp = [];
+      var dataListChild = Array.prototype.slice.call(this.$refs.tupuchild.dataList) 
+      this.tupuDataList = this.$refs.tupuchild.dataList
+      console.log("test ref1", dataListChild.length)
+      console.log("test ref2", this.$refs.tupuchild.dataList.length)
+      for(let i=0; i<dataListChild.length; i++){
+
+        console.log(ele)
+        var node = this.tupuDataList[i];
+        let dict = {
+          value: node['name'],
+          label: node['name']
+        }
+        temp.push(dict);
+        // if(node["value"] != '1'){
+        //   temp.push({value: node['name'], label: node['name']});
+        // }
+      }
+      // this.optionsForTupu = temp;
+      console.log("optionsForTupu", this.optionsForTupu)
+      console.log("optionsForTupu", temp)
+    },
+
+    handleTupuSend(message){
+      this.tupuDataList = Array.from(message);
+      // this.changeTupuOptions();  
+      var temp = [];
+      for(var ele in this.tupuDataList){
+        console.log(ele)
+        var node = this.tupuDataList[i];
+        let dict = {
+          value: node['name'],
+          label: node['name']
+        }
+        temp.push(dict);
+        // if(node["value"] != '1'){
+        //   temp.push({value: node['name'], label: node['name']});
+        // }
+      }
+      // this.optionsForTupu = temp;
+      console.log("optionsForTupu1", this.optionsForTupu)
+      console.log("optionsForTupu2", this.optionsForTupu.length)
+      console.log("optionsForTupu", temp)    
+    },
+
     handleChooseTupuItem(index, row){
       console.log("selection", index)
+      console.log("selection", this.radioLinkTupu)
+
+      // this.radioLinkTupu[index] = value
     },
     showTupu(){
       this.isShowTupu = ! this.isShowTupu;
@@ -1487,10 +1555,13 @@ export default {
     // this.sdkclient = new SdkDemo();
     // this.sdkclient.connect(this.gatewayUrl, this.username, this.password, null, null)
 
-    // //获取设备名字
-    // setTimeout(this.getDevList, 500);
-    // //获取在线设备列表
-    // setTimeout(this.getDeviceOnlineList, 1000);
+    //获取设备名字
+    setTimeout(this.getDevList, 500);
+    //获取在线设备列表
+    setTimeout(this.getDeviceOnlineList, 1000);
+    this.changeTupuOptions();
+    console.log("test ref", this.tupuDataList)
+    console.log("test ref", this.tupuDataList.length)
     // //添加监听器
     // this.sdkclient.addObserver('gpsUpload', msg => {
     // 	if (msg.method == 'gpsUpload') {

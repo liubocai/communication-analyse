@@ -27,6 +27,11 @@ export default {
             
         }
     },
+    watch:{
+        dataList(newValue){
+            this.sendData()
+        }
+    },
 
     computed:{
         option(){
@@ -146,7 +151,12 @@ export default {
             }
         }
     },
+    
     methods: {
+        sendData(){
+            console.log("has send")
+            this.$emit('sendTupuDataList', this.dataList);
+        },
 
         readNameList() {
             axios.get('./nameList.csv', { responseType: 'text' }).then(res => {
@@ -218,6 +228,8 @@ export default {
                 myChart.setOption(this.option);
             }
         },1000)
+        this.sendData();
+
     }
 }
 
