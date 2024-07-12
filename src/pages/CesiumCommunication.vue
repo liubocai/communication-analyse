@@ -88,7 +88,7 @@
       >
         <el-table-column
           type="selection"
-          width="55"
+          width="30"
           :selectable="selectable1"
         />
         <el-table-column label="序号" width="50" align="center" type="index">
@@ -111,9 +111,9 @@
           </template>
         </el-table-column>
 
-        <el-table-column align="right" label="选择" width="60">
+        <el-table-column align="right" label="选择" width="120" >
           <template #default="scope">
-            <el-select v-model="value" placeholder="Select" style="width: 240px">
+            <el-select v-model="value" placeholder="Select" @click.prevent="handleChooseTupuItem(scope.$index, scope.row)">
             <el-option
               v-for="item in optionsForTupu"
               :key="item.value"
@@ -582,6 +582,9 @@ export default {
     }
   },
   methods: {
+    handleChooseTupuItem(index, row){
+      console.log("selection", index)
+    },
     showTupu(){
       this.isShowTupu = ! this.isShowTupu;
     },
