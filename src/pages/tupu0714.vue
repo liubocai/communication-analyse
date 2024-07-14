@@ -20,11 +20,6 @@ import axios from 'axios'
 
 export default {
     name: '11',
-    props: {
-    selectedItems: Array, // 定义接收的prop类型
-    csvData:Array,
-    csvLink:Array
-  },
     data() {
         return {
             dataList:[],
@@ -35,66 +30,10 @@ export default {
     watch:{
         dataList(newValue){
             this.sendData()
-        },
-        selectedItems: {
-           handler: function (newValue) {
-           this.updateChart();
-      },
-      deep: true 
-    },
-        csvData:{
-        handler(newValue) {
-            this.init()
-            console.log('selectedItems:',this.selectedItems)
-        // this.color()
-        setTimeout(()=>{
-            console.log("11111111111111111111111111111111")
-            console.log(this.option)
-            if (this.option && typeof this.option === 'object') {
-                var myChart = echarts.init(document.getElementById('chart-panel'));
-                myChart.setOption(this.option);
-            }
-        },1000)
-      },
-      deep:true,
-      immediate:true
-    },
-       csvLink:{
-          handler(newValue) {
-            this.init()
-            console.log('selectedItems:',this.selectedItems)
-        // this.color()
-        setTimeout(()=>{
-            console.log("11111111111111111111111111111111")
-            console.log(this.option)
-            if (this.option && typeof this.option === 'object') {
-                var myChart = echarts.init(document.getElementById('chart-panel'));
-                myChart.setOption(this.option);
-            }
-        },1000)
-      },
-      deep:true,
-      immediate:true
-    },
+        }
     },
 
     computed:{
-        coloredLinkList() {
-        return this.linkList.map(link => {
-         const isTargetSelected = this.selectedItems.some(item => item === link.target);
-        return {
-          ...link, 
-          lineStyle: {
-            width: 2, 
-            type: 'solid', 
-            curveness: 0.3, 
-            opacity: 0.5 ,
-                                      
-            color: isTargetSelected ? 'red' : 'green' 
-        }
-      };
-    });
-  },
         option(){
             return{
                 tooltip: {
@@ -158,6 +97,18 @@ export default {
                                 z: 100 // 同时提高z值
                             }
                         },
+                        lineStyle: { // ========关系边的公用线条样式。
+                            normal: {
+                                color: 'rgba(255, 255, 255, 1)',
+                                width: '2', //线的粗细
+                                type: 'solid', // 线的类型 'solid'（实线）'dashed'（虚线）'dotted'（点线）
+                                curveness: 0.3, // 线条的曲线程度，从0到1
+                                opacity: 0.5 // 图形透明度。支持从 0 到 1 的数字，为 0 时不绘制该图形。默认0.5
+                            },
+                            emphasis: { // 高亮状态
+
+                            }
+                        },
                         label: { // ========结点图形上的文本标签
                             normal: {
                                 show: true, // 是否显示标签。
@@ -195,17 +146,13 @@ export default {
                         // symbolSize: 结点图形的大小
                         // symbol: 类目节点标记图形，默然为圆形
                         data: this.dataList,
-                        links: this.coloredLinkList
+                        links: this.linkList
                     }]
             }
         }
     },
     
     methods: {
-        updateChart() {
-       var myChart = echarts.init(document.getElementById('chart-panel'));
-        myChart.setOption(this.option);
-  },
         sendData(){
             console.log("has send")
             console.log("this.dataList",this.dataList)
