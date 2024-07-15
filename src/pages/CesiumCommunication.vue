@@ -557,24 +557,24 @@ export default {
     this.fly=temp1;
     this.Ground=temp2;
     let j=0;
-      for(let i=0;i<temp1.length;i++){
+      for(let i=0;i<this.fly.length;i++){
         this.radioLinkTupu.some(item => {
 
-         if( temp1[i].value === item){
+         if( this.fly[i].value === item){
           j++;
          }
         })
       }
       let k=0
-      for(let i=0;i<temp2.length;i++){
+      for(let i=0;i<this.Ground.length;i++){
         this.radioLinkTupu.some(item => {
-          if(temp2[i].value === item){
+          if(this.Ground[i].value === item){
             k++;
           }
         })
       }
-      this.maxGroundNum=temp2.length-k
-      this.maxFlyNum=temp1.length-j
+      this.maxGroundNum=this.Ground.length-k
+      this.maxFlyNum=this.fly.length-j
       this.optionsForTupu = temp;
       console.log("optionsForTupu1", this.optionsForTupu)
       console.log("optionsForTupu2", this.optionsForTupu.length)
