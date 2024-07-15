@@ -357,6 +357,26 @@ export default {
     };
   },
   watch: {
+   radioLinkTupu(newValue) {
+      let j=0
+      let k=0
+      for(let i=0;i<this.fly.length;i++){
+        newValue.some(item => {
+         if( this.fly[i].value === item){
+          j++;
+         }
+        })
+      }
+      for(let i=0;i<this.Ground.length;i++){
+       newValue.some(item => {
+          if(this.Ground[i].value === item){
+            k++;
+          }
+        })
+      }
+      this.maxGroundNum=this.Ground.length-k
+      this.maxFlyNum=this.fly.length-j
+    },
     resultImgName(newValue) {
       // this.entityResult.rectangle.material = newValue;
       // this.entityResult.rectangle.material.image = newValue;
@@ -523,17 +543,36 @@ export default {
 
     handleTupuSend(message) {
       this.tupuDataList = message;
-      console.log('this.tupuDataList', this.tupuDataList)
-      var temp = [];
-      //更新选项
-      for (let i = 0; i < this.tupuDataList.length; i++) {
-        var node = this.tupuDataList[i];
-        let dict = {
-          value: node['name'],
-          label: node['name']
-        }
-        temp.push(dict);
+     const temp = this.tupuDataList
+    .filter(node => node.category === '1' || node.category === '4')
+    .map(node => ({ value: node.name, label: node.name }));
+    const temp1=this.tupuDataList
+    .filter(node => node.category ==='1')
+    .map(node => ({ value: node.name, label: node.name }));
+    const temp2=this.tupuDataList
+    .filter(node => node.category ==='4')
+    .map(node => ({ value: node.name, label: node.name }));
+    this.fly=temp1;
+    this.Ground=temp2;
+    let j=0;
+      for(let i=0;i<temp1.length;i++){
+        this.radioLinkTupu.some(item => {
+
+         if( temp1[i].value === item){
+          j++;
+         }
+        })
       }
+      let k=0
+      for(let i=0;i<temp2.length;i++){
+        this.radioLinkTupu.some(item => {
+          if(temp2[i].value === item){
+            k++;
+          }
+        })
+      }
+      this.maxGroundNum=temp2.length-k
+      this.maxFlyNum=temp1.length-j
       this.optionsForTupu = temp;
       console.log("optionsForTupu1", this.optionsForTupu)
       console.log("optionsForTupu2", this.optionsForTupu.length)
