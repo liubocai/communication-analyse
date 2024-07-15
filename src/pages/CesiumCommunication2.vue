@@ -173,16 +173,13 @@
       <el-button style="float: left" @click="showTupu">知识图谱</el-button>
     </div>
     <div style="display: flex; justify-content: space-around; margin-top: 5px">
-      <input type="text" v-model="point" placeholder="请输入名称" style="font-size: large; width:150px;">
-      <el-select v-model="Typeclass"  style="font-size: large; width:150px;" >
-        <el-option v-for="item in pointClass" :key="item" :value="item"></el-option>
-      </el-select>
+      <input type="text" v-model="point" placeholder="请输入类别" style="font-size: large;">
       <el-button style="float: left;font-size: large;" @click="addPoint">增添</el-button>
       <el-button style="float: left;font-size: large;" @click="deletePoint">删除</el-button>
     </div>
     <div style="display: flex; justify-content: space-around; margin-top: 5px">
-      <input type="text" v-model="nodeFrom" placeholder="起点" style="font-size: large; width:150px;">
-      <input type="text" v-model="nodeTo" placeholder="终点" style="font-size: large;width:150px;">
+      <input type="text" v-model="nodeFrom" placeholder="起点" style="font-size: large; width:120px;">
+      <input type="text" v-model="nodeTo" placeholder="终点" style="font-size: large;width:120px;">
       <el-button style="float: left;font-size: large;" @click="addLink">增添</el-button>
       <el-button style="float: left;font-size: large;" @click="deleteLink">删除</el-button>
     </div>
@@ -234,8 +231,6 @@ export default {
   data() {
     return {
       // linkList: [],
-      pointClass:['卫星','无人机','无人车','应急人员','指挥车','地面接收站'],
-      Typeclass:[],
       Ground:[],
       fly: [],
       radioLinkTupu: [],
@@ -364,9 +359,9 @@ export default {
     };
   },
   watch: {
-    radioLinkTupu:{
-      handler(newValue) {
-      let j=0;
+   radioLinkTupu(newValue) {
+      let j=0
+      let k=0
       for(let i=0;i<this.fly.length;i++){
         newValue.some(item => {
          if( this.fly[i].value === item){
@@ -374,7 +369,6 @@ export default {
          }
         })
       }
-      let k=0
       for(let i=0;i<this.Ground.length;i++){
        newValue.some(item => {
           if(this.Ground[i].value === item){
@@ -385,8 +379,6 @@ export default {
       this.maxGroundNum=this.Ground.length-k
       this.maxFlyNum=this.fly.length-j
     },
-    deep: true,
-  },
     resultImgName(newValue) {
       // this.entityResult.rectangle.material = newValue;
       // this.entityResult.rectangle.material.image = newValue;
@@ -470,6 +462,8 @@ export default {
   },
   methods: {
     async addPoint() {
+      const pointPattern = /^(无人机|应急人员|卫星|无人车|指挥车|地面接收站)(\d+)$/;
+      const match = this.point.match(pointPattern);
       const typeMapping = {
         '无人机': { category: '1', imgName: '无人机' },
         '应急人员': { category: '4', imgName: '应急人员' },
@@ -478,22 +472,19 @@ export default {
         '指挥车': { category: '2', imgName: '指挥车' },
         '地面接收站': { category: '5', imgName: '卫星地面接收站' },
       };
-      if(this.tupuDataList.some(item => item.name === this.point)){
-        alert("该点位已存在") 
-        
-      }else{
-        const number='3'
+      if (match) {
+        const [, type, number] = match
         let category, imgName;
-        const mappingResult = typeMapping[this.Typeclass];
+        const mappingResult = typeMapping[type];
         if (mappingResult) {
           category = mappingResult.category;
           imgName = mappingResult.imgName;
         } else {
           console.error('Invalid type:', type);
         }
-        this.tupuDataList.push({ category, name: this.point, symbol: "image://tupuimg/" + imgName + ".png", value:number, symbolSize: 50 });
+        this.tupuDataList.push({ category, name: this.point, symbol: "image://tupuimg/" + imgName + ".png", value: number, symbolSize: 50 });
         // this.csvData=this.tupuDataList;
-        await axios.post(`http://192.168.10.167:8092/csvNode?category=${category}&name=${this.point}&imgName=${imgName}&value=${number}}`)
+        await axios.post(`${this.$store.state.serverURL}/csvNode?category=${category}&name=${this.point}&imgName=${imgName}&value=${number}`)
           .then(response => {
             console.log(response.data);
             this.csvData.push(1)
@@ -502,19 +493,20 @@ export default {
           .catch(error => {
             console.error(error);
           });
+      } else {
+        console.error('Invalid point format');
+      }
 
       console.log("this.csvData change", this.csvData);
-      }
-     
 
     },
     async deletePoint() {
       const point = this.point;
       const Bool = this.tupuDataList.some(item => item.name === point);
       this.tupuDataList = this.tupuDataList.filter(item => item.name !== point);
-      
+
       if (Bool) {
-        await axios.delete(`http://192.168.10.167:8092/csvNode?name=${point}`)
+        await axios.delete(`${this.$store.state.serverURL}/csvNode?name=${point}`)
           .then(response => {
             console.log(response.data);
             this.csvData.push(1)
@@ -522,50 +514,37 @@ export default {
           .catch(error => {
             console.error(error);
           });
-      }else{
-        alert("该点位不存在")
       }
     },
     async addLink() {
       const nodeFrom = this.nodeFrom
       const nodeTo = this.nodeTo
-      const Bool1 = this.tupuDataList.some(item => item.name === nodeFrom);
-      const Bool2 = this.tupuDataList.some(item => item.name === nodeTo);
-      if (Bool1 && Bool2) {
-        await axios.post(`http://192.168.10.167:8092/csvLink?nodeFrom=${nodeFrom}&nodeTo=${nodeTo}`)
+      if (nodeFrom != null && nodeTo != null) {
+        await axios.post(`${this.$store.state.serverURL}/csvLink?nodeFrom=${nodeFrom}&nodeTo=${nodeTo}`)
           .then(response => {
             console.log(response.data);
             this.csvLink.push(1)
 
           })
           .catch(error => { })
-      }else{
-        alert("请检查点位重新输入")
       }
-      
-      
     },
     async deleteLink() {
       const nodeFrom = this.nodeFrom
       const nodeTo = this.nodeTo
-      const Bool1 = this.tupuDataList.some(item => item.name === nodeFrom);
-      const Bool2 = this.tupuDataList.some(item => item.name === nodeTo);
-      if (Bool1 && Bool2) {
+      if (nodeFrom != null && nodeTo != null) {
         // this.csvLink = this.csvLink.filter(item => !(item.source === nodeFrom && item.target === nodeTo));
-        await axios.delete(`http://192.168.10.167:8092/csvLink?nodeFrom=${nodeFrom}&nodeTo=${nodeTo}`) 
+        await axios.delete(`${this.$store.state.serverURL}/csvLink?nodeFrom=${nodeFrom}&nodeTo=${nodeTo}`) 
         .then(response => {
             this.csvLink.push(1)
           })
           .catch(error => { })
-      }else{
-        alert("请检查点位重新输入")
       }
     },
 
 
     handleTupuSend(message) {
-    this.tupuDataList = message;
-      console.log('this.tupuDataList', this.tupuDataList);
+      this.tupuDataList = message;
      const temp = this.tupuDataList
     .filter(node => node.category === '1' || node.category === '4')
     .map(node => ({ value: node.name, label: node.name }));
@@ -596,9 +575,11 @@ export default {
       }
       this.maxGroundNum=this.Ground.length-k
       this.maxFlyNum=this.fly.length-j
-     this.optionsForTupu = temp;
-     console.log("optionsForTupu", this.optionsForTupu);
-},
+      this.optionsForTupu = temp;
+      console.log("optionsForTupu1", this.optionsForTupu)
+      console.log("optionsForTupu2", this.optionsForTupu.length)
+      console.log("optionsForTupu", temp)
+    },
     handleLinkList(linkList) {
       console.log('接收到的链接列表:', linkList);
       this.tupuLinkList = linkList;
@@ -615,7 +596,7 @@ export default {
     async testnet() {
       var that = this;
       await axios
-        .get(`http://192.168.10.167:8092/testtcp2?`)
+        .get(`${this.$store.state.serverURL}/testtcp2?`)
         .then((res) => {
           console.log(res);
           that.otherRadioIpGpsList = res.data;
@@ -848,6 +829,7 @@ export default {
             height: tmp_coord[2]
           };
           that.radioPos.push(tmp_Point);
+
           that.ReloadAllMarkers();
         }
       };
@@ -1093,7 +1075,7 @@ export default {
       that.$store.state.upLoadProgress = 0;
       const jsonString = JSON.stringify(send);
       axios
-        .post(`http://192.168.10.167:8092/uploadRadioPos?`, {
+        .post(`${this.$store.state.serverURL}/uploadRadioPos?`, {
           data: jsonString
         })
         .then((res) => {
@@ -1295,7 +1277,7 @@ export default {
       var that = this;
       sendData = JSON.stringify(sendData);
       axios
-        .post(`http://192.168.10.167:8092/analysePlanRadio?`, {
+        .post(`${this.$store.state.serverURL}/analysePlanRadio?`, {
           data: sendData
         })
         .then((res) => {
