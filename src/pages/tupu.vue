@@ -21,69 +21,72 @@ import axios from 'axios'
 export default {
     name: '11',
     props: {
-    selectedItems: Array, // 定义接收的prop类型
-    csvData:Array,
-    csvLink:Array
-  },
+        selectedItems: Array, // 定义接收的prop类型
+        csvData: Array,
+        csvLink: Array
+    },
     data() {
         return {
-            dataList:[],
-            linkList:[],
-            
+            myChart: null,
+            dataList: [],
+            linkList: [],
+
         }
     },
-    watch:{
-        dataList(newValue){
+    watch: {
+        dataList(newValue) {
             this.sendData()
         },
-        linkList(newValue){
+        linkList(newValue) {
             this.sendData()
         },
         selectedItems: {
-           handler: function (newValue) {
-           this.updateChart();
-      },
-      deep: true 
-    },
-        csvData:{
-        handler(newValue) {
-            this.init()
-            console.log('selectedItems:',this.selectedItems)
-            this.updateChart()
-       
-      },
-      deep:true
-    },
-       csvLink:{
-          handler(newValue) {
-            this.init()
-            console.log('selectedItems:',this.selectedItems)
-            this.updateChart()
-        
-      },
-      deep:true
-    },
+            handler: function (newValue) {
+                this.updateChart();
+            },
+            deep: true
+        },
+        csvData: {
+            async handler(newValue) {
+                console.log("csvData更新了", this.dataList)
+                await this.readNameList()
+                await this.readLinkList()
+                console.log("csvData更新了", this.dataList)
+                console.log('selectedItems:', this.selectedItems)
+                this.updateChart()
+            },
+            deep: true
+        },
+        csvLink: {
+            async handler(newValue) {
+                console.log("csvLink更新了")
+                await this.readNameList()
+                await this.readLinkList()
+                console.log('selectedItems:', this.selectedItems)
+                this.updateChart()
+            },
+            deep: true
+        },
     },
 
-    computed:{
+    computed: {
         coloredLinkList() {
-        return this.linkList.map(link => {
-         const isTargetSelected = this.selectedItems.some(item => item === link.target);
-        return {
-          ...link, 
-          lineStyle: {
-            width: 2, 
-            type: 'solid', 
-            curveness: 0.3, 
-            opacity: 0.5 ,
-                                      
-            color: isTargetSelected ? 'red' : 'green' 
-        }
-      };
-    });
-  },
-        option(){
-            return{
+            return this.linkList.map(link => {
+                const isTargetSelected = this.selectedItems.some(item => item === link.target);
+                return {
+                    ...link,
+                    lineStyle: {
+                        width: 2,
+                        type: 'solid',
+                        curveness: 0.3,
+                        opacity: 0.5,
+                        color: isTargetSelected ? 'red' : 'green'
+                    }
+                };
+            });
+        },
+        option() {
+            return {
                 tooltip: {
                     show: true, // 默认显示
                     showContent: true, // 是否显示提示框浮层
@@ -187,77 +190,74 @@ export default {
             }
         }
     },
-    
+
     methods: {
         updateChart() {
-       var myChart = echarts.init(document.getElementById('chart-panel'));
-        myChart.setOption(this.option);
-  },
-        sendData(){
+            console.log("this.option datalist", this.option.series[0].data)            
+            this.myChart.setOption(this.option);
+        },
+        sendData() {
             console.log("has send")
-            console.log("this.dataList",this.dataList)
-            console.log("this.linkList2",this.linkList)
+            console.log("this.dataList", this.dataList)
+            console.log("this.linkList2", this.linkList)
             // console.log("this.dataList.length",this.dataList.length)
             this.$emit('sendTupuDataList', this.dataList);
             this.$emit('sendTupuLinkList', this.linkList);
         },
 
-        readNameList() {
-            // console.log("conffffig", window.config.tomcatCsvDataUrl)
-            axios.get('http://localhost:8082/data/csv/nameList.csv', { responseType: 'text' }).then(res => {
-
+        async readNameList() {
+            console.log("readNameList")
+            await axios.get('http://localhost:8082/data/csv/nameList.csv', { responseType: 'text' }).then(res => {
                 Papa.parse(res.data, {
                     complete: parsedData => {
-
-                        parsedData=parsedData.data
-                        let tmpList=[];
+                        parsedData = parsedData.data
+                        let tmpList = [];
                         for (let i = 0; i < parsedData.length - 1; i++) {
-
                             let tmp = {
                                 category: parsedData[i][0],
                                 name: parsedData[i][1],
-                                symbol: "image://tupuimg/"+parsedData[i][2]+".png",
+                                symbol: "image://tupuimg/" + parsedData[i][2] + ".png",
                                 value: parsedData[i][3],
                                 symbolSize: 50
                             }
                             tmpList.push(tmp)
                         }
-                        this.dataList=tmpList
+                        this.dataList = tmpList
                         console.log("==============2==================")
-                        console.log('this.dataList',this.dataList)
+                        console.log('this.dataList', this.dataList)
                     },
                 });
             })
 
         },
-        readLinkList() {
-            axios.get('http://localhost:8082/data/csv/linkList.csv', { responseType: 'text' }).then(res => {
+        async readLinkList() {
+            console.log("readLinkList")
+            await axios.get('http://localhost:8082/data/csv/linkList.csv', { responseType: 'text' }).then(res => {
                 Papa.parse(res.data, {
                     complete: parsedData => {
-
-                        parsedData=parsedData.data
+                        let tmpList = [];
+                        parsedData = parsedData.data
                         for (let i = 0; i < parsedData.length - 1; i++) {
                             let tmp = {
                                 source: parsedData[i][0],
                                 target: parsedData[i][1],
                                 value: 3
                             }
-                            this.linkList.push(tmp)
+                            tmpList.push(tmp)
                         }
+                        this.linkList = tmpList
+
                         console.log('this.linkList', this.linkList)
                     },
                 });
             })
         },
 
-        
+
 
         init() {
             this.readLinkList()
             this.readNameList()
-            document.querySelector('span').addEventListener('click', function () {
-                document.querySelector('#chart').style.display = 'none';
-            });
             // 基于准备好的dom，初始化echarts实例
             console.log("==============================")
 
@@ -266,15 +266,15 @@ export default {
 
     mounted() {
         this.init()
-        setTimeout(()=>{
+        setTimeout(() => {
             console.log("11111111111111111111111111111111")
             console.log(this.option)
             if (this.option && typeof this.option === 'object') {
-                var myChart = echarts.init(document.getElementById('chart-panel'));
-                myChart.setOption(this.option);
+                this.myChart = echarts.init(document.getElementById('chart-panel'));
+                this.myChart.setOption(this.option);
             }
-        },1000)
-        
+        }, 1000)
+
 
     }
 }

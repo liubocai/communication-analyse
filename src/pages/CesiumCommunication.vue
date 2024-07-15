@@ -1,45 +1,22 @@
 <template>
-  <div
-    class="modal"
-    v-show="imgLoading"
-    style="
+  <div class="modal" v-show="imgLoading" style="
       background-color: rgba(0, 0, 0, 0.5);
       z-index: 502;
       width: 100%;
       height: 100%;
       margin:0px;
       position: absolute;
-    "
-  >
-    <span
-      style="position: absolute; width: 20%; margin-top: 20%; color: #409eff"
-    >
+    ">
+    <span style="position: absolute; width: 20%; margin-top: 20%; color: #409eff">
       等待中...
     </span>
-    <el-progress
-      :percentage="$store.state.upLoadProgress"
-      style="width: 30%; margin-left: 35%; margin-top: 22%"
-    >
+    <el-progress :percentage="$store.state.upLoadProgress" style="width: 30%; margin-left: 35%; margin-top: 22%">
     </el-progress>
   </div>
-  <input
-    v-show="false"
-    ref="uploadGeoJSON"
-    type="file"
-    style="margin-top: 10px"
-    name="file"
-    id="file"
-    accept=".geojson"
-    @change="ChooseFile($event)"
-  />
-  <el-button
-    v-show="handImport"
-    style="position: absolute; left: 120px; top: 400px; z-index: 2200"
-    type="primary"
-    size="mini"
-    @click.prevent="importGeoJSON"
-    link
-    >手动导入GeoJSON文件
+  <input v-show="false" ref="uploadGeoJSON" type="file" style="margin-top: 10px" name="file" id="file" accept=".geojson"
+    @change="ChooseFile($event)" />
+  <el-button v-show="handImport" style="position: absolute; left: 120px; top: 400px; z-index: 2200" type="primary"
+    size="mini" @click.prevent="importGeoJSON" link>手动导入GeoJSON文件
   </el-button>
   <!-- <el-button v-show="handImport" style="position: absolute;left:120px ;top: 500px;z-index: 2200;" type="primary"
 			size="mini" @click.prevent="nomain" link>获取设备实时点位
@@ -52,45 +29,24 @@
 			</div> -->
     <div class="panel">
       <label style="margin-left: 12px; font-size: 13px">选择区域</label>
-      <el-select
-        placeholder="请选择一个区域"
-        filterable
-        v-model="inviteCode"
-        style="
+      <el-select placeholder="请选择一个区域" filterable v-model="inviteCode" style="
           margin-top: 10px;
           margin-left: 5px;
           width: 270px;
           margin-bottom: 15px;
-        "
-        size="mini"
-      >
-        <el-option
-          v-for="item in projectOptions"
-          :key="item.projectInviteCode"
-          :label="item.title"
-          :value="item.projectInviteCode"
-        >
+        " size="mini">
+        <el-option v-for="item in projectOptions" :key="item.projectInviteCode" :label="item.title"
+          :value="item.projectInviteCode">
         </el-option>
       </el-select>
       <hr />
       <label style="font-size: 15px; font-weight: bold">已选电台点位</label>
 
-      <el-table
-        :data="radioPos"
-        empty-text=" "
+      <el-table :data="radioPos" empty-text=" "
         style="width: 100%; height: 300px; max-height: 300px; margin-top: 10px; background-color: #19284b; font-size: small;"
-        default-expand-all
-        stripe
-        size="mini"
-        row-key="index"
-        ref="multipleTable"
-        @selection-change="handleSelectionChange1"
-      >
-        <el-table-column
-          type="selection"
-          width="30"
-          :selectable="selectable1"
-        />
+        default-expand-all stripe size="mini" row-key="index" ref="multipleTable"
+        @selection-change="handleSelectionChange1">
+        <el-table-column type="selection" width="30" :selectable="selectable1" />
         <el-table-column label="序号" width="50" align="center" type="index">
         </el-table-column>
         <el-table-column label="经度" width="97" align="center" prop="lon">
@@ -102,68 +58,40 @@
 
         <el-table-column align="right" label="操作" width="60">
           <template #default="scope">
-            <el-button
-              size="mini"
-              @click.prevent="handleCheck(scope.$index, scope.row)"
-              link
-              >查看
+            <el-button size="mini" @click.prevent="handleCheck(scope.$index, scope.row)" link>查看
             </el-button>
           </template>
         </el-table-column>
 
-        <el-table-column align="right" label="选择" width="120" >
+        <el-table-column align="right" label="选择" width="120">
           <template #default="scope">
-            <el-select v-model=this.radioLinkTupu[scope.$index] placeholder="Select" >
-              <!-- @click.prevent="handleChooseTupuItem(scope.$index, scope.row)" -->
-            <el-option 
-              v-for="item in optionsForTupu"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
+            <el-select v-model=this.radioLinkTupu[scope.$index] placeholder="Select">
+              <el-option v-for="item in optionsForTupu" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
           </template>
         </el-table-column>
 
         <el-table-column>
           <template #default="scope">
-            <el-button
-              size="mini"
-              @click.prevent="handleDelete(scope.$index, scope.row)"
-              link
-              style="color: red"
-              >删除
+            <el-button size="mini" @click.prevent="handleDelete(scope.$index, scope.row)" link style="color: red">删除
             </el-button>
           </template>
         </el-table-column>
       </el-table>
       <div style="display: flex">
-        <el-button
-          size="small"
-          style="width: 90px; margin-top: 10px; margin-left: 4%; color: #00aaff"
-          @click="StartSign"
-        >
+        <el-button size="small" style="width: 90px; margin-top: 10px; margin-left: 4%; color: #00aaff"
+          @click="StartSign">
           {{ signBtnName }}
         </el-button>
-        <el-button
-          size="small"
-          style="float: left; margin-top: 10px; margin-left: 4%; color: #00aaff"
-          @click="toGeoJSON"
-        >
+        <el-button size="small" style="float: left; margin-top: 10px; margin-left: 4%; color: #00aaff"
+          @click="toGeoJSON">
           导出坐标点
         </el-button>
-        <el-button
-          size="small"
-          style="float: left; margin-top: 10px; margin-left: 4%; color: #00aaff"
-          @click="uploadRadioPos"
-        >
+        <el-button size="small" style="float: left; margin-top: 10px; margin-left: 4%; color: #00aaff"
+          @click="uploadRadioPos">
           分析
         </el-button>
-        <el-button
-          size="small"
-          style="float: left; margin-top: 10px; margin-left: 4%; color: #00aaff"
-          @click="SaveImg"
-        >
+        <el-button size="small" style="float: left; margin-top: 10px; margin-left: 4%; color: #00aaff" @click="SaveImg">
           保存结果
         </el-button>
       </div>
@@ -173,81 +101,38 @@
       <div style="font-size: 11px; display: flex;justify-content: space-around;">
         <div class='text-min'>
           <span class="text-span">最大可用地面点数量</span>
-          <el-input-number
-          v-model="maxGroundNum"
-          :precision="0"
-          :max="200"
-          size="small"
-          :controls="false"
-          style="width: 50px"
-        />
+          <el-input-number v-model="maxGroundNum" :precision="0" :max="200" size="small" :controls="false"
+            style="width: 50px" />
         </div>
-     
-       <div class='text-min'>
-        <span class="text-span">地面最大允许架高值</span>
-        <el-input-number
-          v-model="maxGroundHeight"
-          :precision="2"
-          :max="200"
-          size="small"
-          :controls="false"
-          style="width: 70px"
-        />
-       </div>
+
+        <div class='text-min'>
+          <span class="text-span">地面最大允许架高值</span>
+          <el-input-number v-model="maxGroundHeight" :precision="2" :max="200" size="small" :controls="false"
+            style="width: 70px" />
+        </div>
       </div>
       <div style="font-size: 11px; display: flex;justify-content: space-around;">
-        <div class='text-min'> <span class="text-span">最大可用空中点数量</span><el-input-number
-          v-model="maxFlyNum"
-          :precision="0"
-          :max="200"
-          size="small"
-          :controls="false"
-          style="width: 50px"
-        /></div>
-       <div class='text-min'> <span class="text-span">空中节点最大飞行高度</span><el-input-number
-          v-model="maxFlyHeight"
-          :precision="2"
-          :max="500"
-          size="small"
-          :controls="false"
-          style="width: 70px"
-        /></div>
-        
+        <div class='text-min'> <span class="text-span">最大可用空中点数量</span><el-input-number v-model="maxFlyNum"
+            :precision="0" :max="200" size="small" :controls="false" style="width: 50px" /></div>
+        <div class='text-min'> <span class="text-span">空中节点最大飞行高度</span><el-input-number v-model="maxFlyHeight"
+            :precision="2" :max="500" size="small" :controls="false" style="width: 70px" /></div>
+
       </div>
       <div style="font-size: 11px;display: flex;justify-content: space-around;">
-        <div class='text-min'> <span class="text-span">通信覆盖范围</span><el-input-number
-          v-model="maxComputeRadioDistance"
-          :precision="0"
-          :max="10000"
-          size="small"
-          :controls="false"
-          style="width: 70px"
-        /></div>
-        <div class='text-min'> <span class="text-span">采样点间隔</span><el-input-number
-          v-model="samplePointInterval"
-          :precision="2"
-          :max="500"
-          size="small"
-          :controls="false"
-          style="width: 70px"
-        /></div>
-       
+        <div class='text-min'> <span class="text-span">通信覆盖范围</span><el-input-number v-model="maxComputeRadioDistance"
+            :precision="0" :max="10000" size="small" :controls="false" style="width: 70px" /></div>
+        <div class='text-min'> <span class="text-span">采样点间隔</span><el-input-number v-model="samplePointInterval"
+            :precision="2" :max="500" size="small" :controls="false" style="width: 70px" /></div>
+
       </div>
     </div>
 
     <div style="display: flex; justify-content: space-around; margin-top: 5px">
-      <el-button style="float: left" @click="analysePlanRadio"
-        >补点分析</el-button
-      >
-      <el-button style="float: left" @click="continueUpload"
-        >继续更新</el-button
-      >
+      <el-button style="float: left" @click="analysePlanRadio">补点分析</el-button>
+      <el-button style="float: left" @click="continueUpload">继续更新</el-button>
     </div>
 
-    <el-table
-      :data="planRadio"
-      empty-text=" "
-      style="
+    <el-table :data="planRadio" empty-text=" " style="
         width: 100%;
         height: 300px;
         max-height: 300px;
@@ -255,13 +140,7 @@
         overflow-y: auto;
         font-size: small;
         background-color: #19284b;
-      "
-      row-key="index"
-      default-expand-all
-      stripe
-      size="mini"
-      @selection-change="handleSelectionChange2"
-    >
+      " row-key="index" default-expand-all stripe size="mini" @selection-change="handleSelectionChange2">
       <el-table-column type="selection" width="55" :selectable="selectable2" />
       <el-table-column label="序号" width="50" align="center" type="index">
       </el-table-column>
@@ -274,96 +153,56 @@
       <el-table-column label="高度" width="60" align="center" prop="height">
       </el-table-column>
 
-      <el-table-column align="right" label="选择" width="120" >
-          <template #default="scope">
-            <el-select v-model=this.radioLinkTupu[scope.$index+this.radioPos.length] placeholder="Select" >
-              <!-- @click.prevent="handleChooseTupuItem(scope.$index, scope.row)" -->
-            <el-option 
-              v-for="item in optionsForTupu"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
+      <el-table-column align="right" label="选择" width="120">
+        <template #default="scope">
+          <el-select v-model=this.radioLinkTupu[scope.$index+this.radioPos.length] placeholder="Select">
+            <el-option v-for="item in optionsForTupu" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
-          </template>
-        </el-table-column>
+        </template>
+      </el-table-column>
 
       <el-table-column>
         <template #default="scope">
-          <el-button
-            size="mini"
-            @click.prevent="handleDelPrinfo(scope.$index, scope.row)"
-            link
-            style="color: red"
-            >删除
+          <el-button size="mini" @click.prevent="handleDelPrinfo(scope.$index, scope.row)" link style="color: red">删除
           </el-button>
         </template>
       </el-table-column>
-    </el-table>   
+    </el-table>
 
     <div style="display: flex; justify-content: space-around; margin-top: 5px">
-      <el-button style="float: left" @click="showTupu"
-        >知识图谱</el-button
-      >
+      <el-button style="float: left" @click="showTupu">知识图谱</el-button>
     </div>
     <div style="display: flex; justify-content: space-around; margin-top: 5px">
       <input type="text" v-model="point" placeholder="请输入类别" style="font-size: large;">
-      <el-button style="float: left;font-size: large;" @click="addPoint" 
-        >增添</el-button
-      >
-      <el-button style="float: left;font-size: large;" @click="deletePoint"
-        >删除</el-button
-      >
+      <el-button style="float: left;font-size: large;" @click="addPoint">增添</el-button>
+      <el-button style="float: left;font-size: large;" @click="deletePoint">删除</el-button>
     </div>
     <div style="display: flex; justify-content: space-around; margin-top: 5px">
       <input type="text" v-model="nodeFrom" placeholder="起点" style="font-size: large; width:120px;">
       <input type="text" v-model="nodeTo" placeholder="终点" style="font-size: large;width:120px;">
-      <el-button style="float: left;font-size: large;" @click="addLink" 
-        >增添</el-button
-      >
-      <el-button style="float: left;font-size: large;" @click="deleteLink"
-        >删除</el-button
-      >
+      <el-button style="float: left;font-size: large;" @click="addLink">增添</el-button>
+      <el-button style="float: left;font-size: large;" @click="deleteLink">删除</el-button>
     </div>
   </div>
-  
-  <tupu style="position: absolute;width: 500px;height: 500px;left:600px;top:200px;z-index: 114514;" v-show=this.isShowTupu @sendTupuDataList="handleTupuSend" @sendTupuLinkList="handleLinkList"  ref="tupuchild" :selected-items="radioLinkTupu" :csvData="csvData" :csvLink="csvLink"></tupu>
-  
+
+  <tupu style="position: absolute;width: 500px;height: 500px;left:600px;top:200px;z-index: 114514;"
+    v-show=this.isShowTupu @sendTupuDataList="handleTupuSend" @sendTupuLinkList="handleLinkList"
+    :selected-items="this.radioLinkTupu" :csvData="csvData" :csvLink="csvLink"></tupu>
+
 
   <div id="container" class="cesiumbox" style="">
     <div id="cesiumContainer" :style="cesiumStyle">
-      <el-button
-        class="Change"
-        type="primary"
-        size="mini"
-        @click="changeLayer"
-        :style="{ backgroundImage: 'url(' + changeIconUrl + ')' }"
-      >
+      <el-button class="Change" type="primary" size="mini" @click="changeLayer"
+        :style="{ backgroundImage: 'url(' + changeIconUrl + ')' }">
       </el-button>
-      <el-button
-        class="Hide"
-        type="primary"
-        size="mini"
-        @click="HideImg"
-        :style="{ backgroundImage: 'url(' + hideIconUrl + ')' }"
-      >
+      <el-button class="Hide" type="primary" size="mini" @click="HideImg"
+        :style="{ backgroundImage: 'url(' + hideIconUrl + ')' }">
       </el-button>
       <el-button class="Resize" type="primary" size="mini" @click="Resize">
         <el-icon>
           <Refresh />
         </el-icon>
       </el-button>
-
-      <!-- <span
-        style="
-          position: absolute;
-          right: 20px;
-          bottom: 5px;
-          z-index: 1;
-          color: #ffffff;
-        "
-        >{{ currentMousePos1 }}{{ currentMousePos2 }}</span
-      > -->
     </div>
   </div>
 </template>
@@ -393,15 +232,15 @@ export default {
     return {
       // linkList: [],
       radioLinkTupu: [],
-      tupuLinkList:null,
+      tupuLinkList: null,
       tupuDataList: null,
-      optionsForTupu :[],
-      csvData:[],//用来给tupu子组件刷新
-      csvLink:[],//用来给tupu子组件刷新
+      optionsForTupu: [],
+      csvData: [],//用来给tupu子组件刷新
+      csvLink: [],//用来给tupu子组件刷新
       point: '',
       nodeFrom: '',
       nodeTo: '',
-      isShowTupu : false,
+      isShowTupu: false,
       maxComputeRadioDistance: 1000,
       samplePointInterval: 5,
       selectedItems: [],
@@ -456,7 +295,7 @@ export default {
         }
       ],
       inviteCode: '',
-      radioToEntity: {"节点1":"无人机1"},
+      radioToEntity: { "节点1": "无人机1" },
       radioPos: [],
       radioPosLength: 0,
       rectangle: null,
@@ -518,91 +357,6 @@ export default {
     };
   },
   watch: {
-    // radioLinkTupu:{
-    //   handler(newValue){
-    //     // let temp = []
-    //     // for(let i=0; i<newValue.length; i++){
-    //     //   if(newValue[i] != null){
-    //     //     temp.push(newValue[i])
-    //     //   }
-    //     // }
-    //     // this.selectedItems = temp;
-    //     this.selectedItems = newValue;
-    //   },
-    //   deep: true,
-    //   immediate: true 
-    // },
-    // radioLinkTupu(newValue, oldValue){
-    //   console.log("selection radioLinkTupu", newValue)
-    //   let temp = []
-    //   for(let i=0; i<newValue.length; i++){
-    //     if(newValue[i] != null){
-    //       temp.push(newValue[i])
-    //     }
-    //   }
-    //   this.selectedItems = temp;
-      
-    // },
-  //   csvData: {
-  //     handler(newValue) {
-  //       console.log("watch csvData", newValue)
-  //     let temp = [];
-  //     for(let i =0;i<newValue.length;i++){
-  //       let node = newValue[i];
-  //       let dict = {
-  //         value: node['name'],
-  //         label: node['name']
-  //       }
-  //       temp.push(dict);
-  //     }
-  //     this.optionsForTupu = temp;
-      
-  //   },
-  // },
-  //   deep: true,
-  //   immediate: true
-  // },
- 
-    // tupuDataList:{
-    //   handler(newValue) {
-    //   // console.log("watch csvData", newValue)
-    //   // var temp = [];
-    //   // for(let i=0; i<newValue.length; i++){
-    //   //   console.log(i)
-    //   //   var node = newValue[i];
-    //   //   let dict = {
-    //   //     value: node['name'],
-    //   //     label: node['name']
-    //   var temp = [];
-    //   for(let i =0;i<newValue.length;i++){
-    //     var node = newValue[i];
-    //     let dict = {
-    //       value: node['name'],
-    //       label: node['name']
-    //     }
-    //     temp.push(dict);
-    //   }
-    //   this.optionsForTupu = temp;
-    //   },
-    //   deep: true, 
-    //   immediate: true 
-    // },
-    // radioPos: {
-    // handler(newValue) {
-    //   const filteredItems = [];
-    //   for (let item of this.selectedItems) {
-    //     const lat=item.lat;
-    //     const lng=item.lng;
-    //     const isInRadioPos = newValue.some(pos => pos.lat === lat && pos.lng === lng);
-    //     if (isInRadioPos) {
-    //       filteredItems.push(item);
-    //     }
-    //   }
-    //   this.selectedItems = filteredItems;
-    // },
-  //   deep: true, 
-  //   immediate: true 
-  // },
     resultImgName(newValue) {
       // this.entityResult.rectangle.material = newValue;
       // this.entityResult.rectangle.material.image = newValue;
@@ -687,94 +441,92 @@ export default {
   methods: {
     async addPoint() {
       const pointPattern = /^(无人机|应急人员|卫星|无人车|指挥车|地面接收站)(\d+)$/;
-      const match = this.point.match(pointPattern); 
+      const match = this.point.match(pointPattern);
       const typeMapping = {
-            '无人机': { category: '1', imgName: '无人机' },
-            '应急人员': { category: '4', imgName: '应急人员' },
-            '卫星': { category: '0', imgName: '卫星云图' }, // 或者更改类别
-            '无人车': { category: '3', imgName: '无人车' },
-            '指挥车': { category: '2', imgName: '指挥车' },
-            '地面接收站': { category: '5', imgName: '卫星地面接收站' },
-};
+        '无人机': { category: '1', imgName: '无人机' },
+        '应急人员': { category: '4', imgName: '应急人员' },
+        '卫星': { category: '0', imgName: '卫星云图' }, // 或者更改类别
+        '无人车': { category: '3', imgName: '无人车' },
+        '指挥车': { category: '2', imgName: '指挥车' },
+        '地面接收站': { category: '5', imgName: '卫星地面接收站' },
+      };
       if (match) {
-         const [, type, number] = match   
-         let category, imgName;
-         const mappingResult = typeMapping[type];
-         if (mappingResult) {
-             category = mappingResult.category;
-             imgName = mappingResult.imgName;
-         } else {
-             console.error('Invalid type:', type);
-}
-        this.tupuDataList.push({ category, name: this.point, imgName, value: number });
+        const [, type, number] = match
+        let category, imgName;
+        const mappingResult = typeMapping[type];
+        if (mappingResult) {
+          category = mappingResult.category;
+          imgName = mappingResult.imgName;
+        } else {
+          console.error('Invalid type:', type);
+        }
+        this.tupuDataList.push({ category, name: this.point, symbol: "image://tupuimg/" + imgName + ".png", value: number, symbolSize: 50 });
         // this.csvData=this.tupuDataList;
         await axios.post(`${this.$store.state.serverURL}/csvNode?category=${category}&name=${this.point}&imgName=${imgName}&value=${number}`)
-        .then(response => {
-        console.log(response.data);
-        })
-        .catch(error => {
-        console.error(error);
-        }); 
-       this.csvData.push(1)
+          .then(response => {
+            console.log(response.data);
+            this.csvData.push(1)
+
+          })
+          .catch(error => {
+            console.error(error);
+          });
       } else {
         console.error('Invalid point format');
-  }
-      
-        console.log(this.csvData);
-},
-    async deletePoint() {
-          const point = this.point;
-          // const Bool=this.csvData.some(item => item.name === point);
-          const Bool=this.tupuDataList.some(item => item.name === point);
-          // this.csvData = this.csvData.filter(item => item.name !== point);
-          this.tupuDataList = this.tupuDataList.filter(item => item.name !== point);
-          
-          if(Bool){
-            await axios.delete(`${this.$store.state.serverURL}/csvNode?name=${point}`)
-            .then(response => {
-              console.log(response.data);
-            })
-            .catch(error => {
-              console.error(error);
-            });
-            this.csvData.push(1)
-          } 
-          
-          console.log(this.csvData);
-},
-    async addLink() {
-      const nodeFrom=this.nodeFrom
-      const nodeTo=this.nodeTo
-      if(nodeFrom!=null && nodeTo!=null){
-        // this.csvLink.push({source:nodeFrom,target:nodeTo,value:1})
-        await axios.post(`${this.$store.state.serverURL}/csvLink?nodeFrom=${nodeFrom}&nodeTo=${nodeTo}`)
-        .then(response => {
-          console.log(response.data);
-        })
-       .catch(error => {})
-        this.csvLink.push(1)
-    }
+      }
+
+      console.log("this.csvData change", this.csvData);
+
     },
-    async deleteLink() {
-      const nodeFrom=this.nodeFrom
-      const nodeTo=this.nodeTo
-      if(nodeFrom!=null && nodeTo!=null){
-        // this.csvLink = this.csvLink.filter(item => !(item.source === nodeFrom && item.target === nodeTo));
-        await axios.delete(`${this.$store.state.serverURL}/csvLink?nodeFrom=${nodeFrom}&nodeTo=${nodeTo}`)
-        this.csvLink.push(1)
+    async deletePoint() {
+      const point = this.point;
+      const Bool = this.tupuDataList.some(item => item.name === point);
+      this.tupuDataList = this.tupuDataList.filter(item => item.name !== point);
+
+      if (Bool) {
+        await axios.delete(`${this.$store.state.serverURL}/csvNode?name=${point}`)
+          .then(response => {
+            console.log(response.data);
+            this.csvData.push(1)
+          })
+          .catch(error => {
+            console.error(error);
+          });
       }
     },
-    changeTupuOptions(){
-      
+    async addLink() {
+      const nodeFrom = this.nodeFrom
+      const nodeTo = this.nodeTo
+      if (nodeFrom != null && nodeTo != null) {
+        await axios.post(`${this.$store.state.serverURL}/csvLink?nodeFrom=${nodeFrom}&nodeTo=${nodeTo}`)
+          .then(response => {
+            console.log(response.data);
+            this.csvLink.push(1)
+
+          })
+          .catch(error => { })
+      }
+    },
+    async deleteLink() {
+      const nodeFrom = this.nodeFrom
+      const nodeTo = this.nodeTo
+      if (nodeFrom != null && nodeTo != null) {
+        // this.csvLink = this.csvLink.filter(item => !(item.source === nodeFrom && item.target === nodeTo));
+        await axios.delete(`${this.$store.state.serverURL}/csvLink?nodeFrom=${nodeFrom}&nodeTo=${nodeTo}`) 
+        .then(response => {
+            this.csvLink.push(1)
+          })
+          .catch(error => { })
+      }
     },
 
-    handleTupuSend(message){
-      
+
+    handleTupuSend(message) {
       this.tupuDataList = message;
-      // this.csvData=this.tupuDataList
-      console.log('this.tupuDataList',this.tupuDataList)
+      console.log('this.tupuDataList', this.tupuDataList)
       var temp = [];
-      for(let i =0;i<this.tupuDataList.length;i++){
+      //更新选项
+      for (let i = 0; i < this.tupuDataList.length; i++) {
         var node = this.tupuDataList[i];
         let dict = {
           value: node['name'],
@@ -785,28 +537,19 @@ export default {
       this.optionsForTupu = temp;
       console.log("optionsForTupu1", this.optionsForTupu)
       console.log("optionsForTupu2", this.optionsForTupu.length)
-      console.log("optionsForTupu", temp)    
+      console.log("optionsForTupu", temp)
     },
     handleLinkList(linkList) {
       console.log('接收到的链接列表:', linkList);
       this.tupuLinkList = linkList;
     },
-    handleChooseTupuItem(index, row){
+    handleChooseTupuItem(index, row) {
       console.log("selection", index)
       console.log("selection", this.radioLinkTupu)
-      // const selectedItem = this.optionsForTupu[index];
-      // this.selectedItems = Array.from(this.radioLinkTupu)
-      // let temp = []
-      // for(let i=0; i<this.radioLinkTupu.length; i++){
-      //   if(this.radioLinkTupu[i] != null){
-      //     temp.push(this.radioLinkTupu[i])
-      //   }
-      // }
-      // this.selectedItems = temp;
-      // console.log("selection", this.selectedItems)
     },
-    showTupu(){
-      this.isShowTupu = ! this.isShowTupu;
+    showTupu() {
+      this.isShowTupu = !this.isShowTupu;
+      this.csvData.push(1);
     },
 
     async testnet() {
@@ -1076,6 +819,7 @@ export default {
     handleDelete(index, row) {
       this.radioPos.splice(index, 1);
       this.radioPosLength = this.radioPosLength - 1;
+      this.radioLinkTupu[index] = "";
       this.ReloadAllMarkers();
     },
     headUpload(params) {
@@ -1686,8 +1430,8 @@ export default {
       that.Cesium = Cesium;
     }
   },
- async mounted() {
-  // await this.fetchDataFromServer();
+  async mounted() {
+    // await this.fetchDataFromServer();
     this.init();
     // //链接网关
     // this.sdkclient = new SdkDemo();
@@ -1697,7 +1441,7 @@ export default {
     setTimeout(this.getDevList, 500);
     //获取在线设备列表
     setTimeout(this.getDeviceOnlineList, 1000);
-    this.changeTupuOptions();
+
 
     // //添加监听器
     // this.sdkclient.addObserver('gpsUpload', msg => {
@@ -1725,25 +1469,27 @@ export default {
     // 	}
     // })
     // // //开启动态更新坐标函数
-    this.printDevOnlineList();
+    //this.printDevOnlineList();
     // // 开启动态上传坐标进行态势感知函数
     // this.selectAndUpload();
   },
 
-  destroyed() {}
+  destroyed() { }
 };
 </script>
 
 <style scoped>
-.text-span{
+.text-span {
   min-width: 130px;
   display: inline-block;
   line-height: 28px
 }
-.text-min{
+
+.text-min {
   text-align: left;
   min-width: 50%;
 }
+
 #cesiumContainer {
   height: calc(100vh - 59px);
 }
@@ -1765,7 +1511,7 @@ export default {
   height: calc(100vh - 59px);
   left: 0px;
   position: absolute;
-  color:aliceblue;
+  color: aliceblue;
   overflow: hidden;
   display: inline-block;
   /* margin-left: 6px; */
@@ -1776,10 +1522,14 @@ export default {
 }
 
 .Hide {
-  background-size: cover; /* 或者其他适合的大小调整值 */
-  background-position: center; /* 图片位置 */
-  border: none; /* 移除边框 */
-  padding: 0; /* 移除内边距 */
+  background-size: cover;
+  /* 或者其他适合的大小调整值 */
+  background-position: center;
+  /* 图片位置 */
+  border: none;
+  /* 移除边框 */
+  padding: 0;
+  /* 移除内边距 */
   position: absolute;
   right: 20px;
   bottom: 80px;
@@ -1803,10 +1553,14 @@ export default {
 }
 
 .Change {
-  background-size: cover; /* 或者其他适合的大小调整值 */
-  background-position: center; /* 图片位置 */
-  border: none; /* 移除边框 */
-  padding: 0; /* 移除内边距 */
+  background-size: cover;
+  /* 或者其他适合的大小调整值 */
+  background-position: center;
+  /* 图片位置 */
+  border: none;
+  /* 移除边框 */
+  padding: 0;
+  /* 移除内边距 */
   position: absolute;
   right: 20px;
   bottom: 130px;
