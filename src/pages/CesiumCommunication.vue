@@ -231,6 +231,8 @@ export default {
   data() {
     return {
       // linkList: [],
+      Ground:[],
+      fly: [],
       radioLinkTupu: [],
       tupuLinkList: null,
       tupuDataList: null,
