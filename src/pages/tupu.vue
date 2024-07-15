@@ -70,7 +70,7 @@ export default {
     },
 
     computed: {
-         coloredLinkList() {
+        coloredLinkList() {
             return this.linkList.map(link => {
                 const isTargetSelected = this.selectedItems.some(item => item === link.target||item === link.source);
                 return {
@@ -195,8 +195,7 @@ export default {
         updateChart() {
             console.log("this.option datalist", this.option.series[0].data)            
             this.myChart.setOption(this.option);
-        },
-        sendData() {
+        },        sendData() {
             console.log("has send")
             console.log("this.dataList", this.dataList)
             console.log("this.linkList2", this.linkList)
