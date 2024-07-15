@@ -113,8 +113,9 @@
 
         <el-table-column align="right" label="选择" width="120" >
           <template #default="scope">
-            <el-select v-model=this.radioLinkTupu[scope.$index] placeholder="Select" @click.prevent="handleChooseTupuItem(scope.$index, scope.row)">
-            <el-option
+            <el-select v-model=this.radioLinkTupu[scope.$index] placeholder="Select" >
+              <!-- @click.prevent="handleChooseTupuItem(scope.$index, scope.row)" -->
+            <el-option 
               v-for="item in optionsForTupu"
               :key="item.value"
               :label="item.label"
@@ -272,6 +273,21 @@
       </el-table-column>
       <el-table-column label="高度" width="60" align="center" prop="height">
       </el-table-column>
+
+      <el-table-column align="right" label="选择" width="120" >
+          <template #default="scope">
+            <el-select v-model=this.radioLinkTupu[scope.$index+this.radioPos.length] placeholder="Select" >
+              <!-- @click.prevent="handleChooseTupuItem(scope.$index, scope.row)" -->
+            <el-option 
+              v-for="item in optionsForTupu"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+          </template>
+        </el-table-column>
+
       <el-table-column>
         <template #default="scope">
           <el-button
@@ -290,10 +306,28 @@
         >知识图谱</el-button
       >
     </div>
-
+    <div style="display: flex; justify-content: space-around; margin-top: 5px">
+      <input type="text" v-model="point" placeholder="请输入类别" style="font-size: large;">
+      <el-button style="float: left;font-size: large;" @click="addPoint" 
+        >增添</el-button
+      >
+      <el-button style="float: left;font-size: large;" @click="deletePoint"
+        >删除</el-button
+      >
+    </div>
+    <div style="display: flex; justify-content: space-around; margin-top: 5px">
+      <input type="text" v-model="nodeFrom" placeholder="起点" style="font-size: large; width:120px;">
+      <input type="text" v-model="nodeTo" placeholder="终点" style="font-size: large;width:120px;">
+      <el-button style="float: left;font-size: large;" @click="addLink" 
+        >增添</el-button
+      >
+      <el-button style="float: left;font-size: large;" @click="deleteLink"
+        >删除</el-button
+      >
+    </div>
   </div>
   
-    <tupu style="position: absolute;width: 500px;height: 500px;left:450px;top:200px;z-index: 114514;" v-show=this.isShowTupu @sendTupuDataList="handleTupuSend" ref="tupuchild"></tupu>
+  <tupu style="position: absolute;width: 500px;height: 500px;left:600px;top:200px;z-index: 114514;" v-show=this.isShowTupu @sendTupuDataList="handleTupuSend" ref="tupuchild" :selected-items="radioLinkTupu" :csvData="csvData" :csvLink="csvLink"></tupu>
   
 
   <div id="container" class="cesiumbox" style="">
@@ -357,35 +391,19 @@ export default {
   },
   data() {
     return {
+      // linkList: [],
       radioLinkTupu: [],
       tupuDataList: null,
-      optionsForTupu :[
-        {
-          value: 'Option1',
-          label: 'Option1',
-        },
-        {
-          value: 'Option2',
-          label: 'Option2',
-        },
-        {
-          value: 'Option3',
-          label: 'Option3',
-        },
-        {
-          value: 'Option4',
-          label: 'Option4',
-        },
-        {
-          value: 'Option5',
-          label: 'Option5',
-        },
-      ],
-
+      optionsForTupu :[],
+      csvData: [],
+      csvLink: [],
+      point: '',
+      nodeFrom: '',
+      nodeTo: '',
       isShowTupu : false,
       maxComputeRadioDistance: 1000,
       samplePointInterval: 5,
-
+      selectedItems: [],
       otherRadioIpGpsList: {}, //{"ip":{"lon":lon,"lat":lat,"height":height}}
       radioLinkTupuEntity: [], //['应急人员1'， '无人机2'] 序号按照radioPos中的序号
       msctoken: null,
@@ -499,6 +517,31 @@ export default {
     };
   },
   watch: {
+    // radioLinkTupu:{
+    //   handler(newValue){
+    //     // let temp = []
+    //     // for(let i=0; i<newValue.length; i++){
+    //     //   if(newValue[i] != null){
+    //     //     temp.push(newValue[i])
+    //     //   }
+    //     // }
+    //     // this.selectedItems = temp;
+    //     this.selectedItems = newValue;
+    //   },
+    //   deep: true,
+    //   immediate: true 
+    // },
+    // radioLinkTupu(newValue, oldValue){
+    //   console.log("selection radioLinkTupu", newValue)
+    //   let temp = []
+    //   for(let i=0; i<newValue.length; i++){
+    //     if(newValue[i] != null){
+    //       temp.push(newValue[i])
+    //     }
+    //   }
+    //   this.selectedItems = temp;
+      
+    // },
     tupuDataList(newValue){
       // console.log("watch tupuData", newValue)
       // var temp = [];
@@ -518,6 +561,38 @@ export default {
       // console.log("optionsForTupu", this.optionsForTupu)
       // console.log("optionsForTupu", temp)
     },
+    csvData:{
+      handler(newValue) {
+      // console.log("watch csvData", newValue)
+      // var temp = [];
+      // for(let i=0; i<newValue.length; i++){
+      //   console.log(i)
+      //   var node = newValue[i];
+      //   let dict = {
+      //     value: node['name'],
+      //     label: node['name']
+        this.optionsForTupu = newValue.filter(item => ['无人机', '应急人员'].includes(item.imgName))
+                                              .map(item => ({ value: item.name, label: item.name }));
+      },
+      deep: true, 
+      immediate: true 
+     },
+    radioPos: {
+    handler(newValue) {
+      const filteredItems = [];
+      for (let item of this.selectedItems) {
+        const lat=item.lat;
+        const lng=item.lng;
+        const isInRadioPos = newValue.some(pos => pos.lat === lat && pos.lng === lng);
+        if (isInRadioPos) {
+          filteredItems.push(item);
+        }
+      }
+      this.selectedItems = filteredItems;
+    },
+    deep: true, 
+    immediate: true 
+  },
     resultImgName(newValue) {
       // this.entityResult.rectangle.material = newValue;
       // this.entityResult.rectangle.material.image = newValue;
@@ -600,49 +675,141 @@ export default {
     }
   },
   methods: {
+    async addPoint() {
+      const pointPattern = /^(无人机|应急人员|卫星|无人车|指挥车|地面接收站)(\d+)$/;
+      const match = this.point.match(pointPattern); 
+      const typeMapping = {
+            '无人机': { category: '1', imgName: '无人机' },
+            '应急人员': { category: '4', imgName: '应急人员' },
+            '卫星': { category: '0', imgName: '卫星云图' }, // 或者更改类别
+            '无人车': { category: '3', imgName: '无人车' },
+            '指挥车': { category: '2', imgName: '指挥车' },
+            '地面接收站': { category: '5', imgName: '卫星地面接收站' },
+};
+      if (match) {
+         const [, type, number] = match   
+         let category, imgName;
+         const mappingResult = typeMapping[type];
+         if (mappingResult) {
+             category = mappingResult.category;
+             imgName = mappingResult.imgName;
+         } else {
+             console.error('Invalid type:', type);
+}
+        this.csvData.push({ category, name: this.point, imgName, value: number });
+        await axios.post(`${this.$store.state.serverURL}/csvNode`, {
+         category,
+         name: this.point,
+         imgName,
+         value: number
+        })
+        .then(response => {
+        console.log(response.data);
+        })
+        .catch(error => {
+        console.error(error);
+        });
+      } else {
+        console.error('Invalid point format');
+  }
+        console.log(this.csvData);
+},
+    async deletePoint() {
+          const point = this.point;
+          const Bool=this.csvData.some(item => item.name === point);
+          this.csvData = this.csvData.filter(item => item.name !== point);
+          if(Bool){
+             await axios.delete(`${this.$store.state.serverURL}/csvNode`, {
+              data: {
+                name: point
+              }
+            })
+            .then(response => {
+              console.log(response.data);
+            })
+            .catch(error => {
+              console.error(error);
+            });
+          }
+          console.log(this.csvData);
+},
+    async fetchDataFromServer() {
+         try {
+             const response = await axios.get(`${this.$store.state.serverURL}/.nameList.csv`, { responseType: 'text' });
+             Papa.parse(response.data, {
+                  complete: parsedData => {
+                    console.log("fetchDataFromServer", parsedData.data)
+                    parsedData = parsedData.data;
+                    this.csvData = parsedData.slice(1).map(row => ({
+                     category: row[0],
+                     name: row[1],
+                     imgName: row[2],
+                     value: row[3],
+            }));
+            
+            this.optionsForTupu = this.csvData.filter(item => ['无人机', '应急人员'].includes(item.imgName))
+                                             .map(item => ({ value: item.name, label: item.name }));
+          },
+        });
+           const response1 = await axios.get('./linkList.csv', { responseType: 'text' });
+             Papa.parse(response1.data, {
+                  complete: parsedData => {
+                    parsedData = parsedData.data;
+                    this.csvLink = parsedData.slice(1).map(row => ({
+                      source: row[0],
+                      target: row[1],
+                      value: row[2],
+                    }));
+                  },
+                });
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    },
+    async addLink() {
+      const nodeFrom=this.nodeFrom
+      const nodeTo=this.nodeTo
+      if(nodeFrom!=null && nodeTo!=null){
+        this.csvLink.push({source:nodeFrom,target:nodeTo,value:1})
+        await axios.post(`${this.$store.state.serverURL}/csvLink`, {
+           nodeFrom,
+           nodeTo
+        })
+        .then(response => {
+          console.log(response.data);
+        })
+       .catch(error => {})
+      }
+    },
+    async deleteLink() {
+      const nodeFrom=this.nodeFrom
+      const nodeTo=this.nodeTo
+      if(nodeFrom!=null && nodeTo!=null){
+        this.csvLink = this.csvLink.filter(item => !(item.source === nodeFrom && item.target === nodeTo));
+        await axios.delete(`${this.$store.state.serverURL}/csvLink`, {
+          data: {
+            nodeFrom,
+            nodeTo
+          }
+        })
+      }
+    },
     changeTupuOptions(){
       
-      // var temp = [];
-      // var dataListChild = Array.prototype.slice.call(this.$refs.tupuchild.dataList) 
-      
-      // this.tupuDataList = this.$refs.tupuchild.dataList
-      // console.log("this.tupuDataList", this.tupuDataList)
-      // console.log("test ref1", this.tupuDataList.length)
-      // for(let i=0; i<dataListChild.length; i++){
-
-      //   console.log(ele)
-      //   var node = this.tupuDataList[i];
-      //   let dict = {
-      //     value: node['name'],
-      //     label: node['name']
-      //   }
-      //   temp.push(dict);
-      //   // if(node["value"] != '1'){
-      //   //   temp.push({value: node['name'], label: node['name']});
-      //   // }
-      // }
-      // // this.optionsForTupu = temp;
-      // console.log("optionsForTupu", this.optionsForTupu)
-      // console.log("optionsForTupu", temp)
     },
 
     handleTupuSend(message){
       
       this.tupuDataList = message;
       console.log('this.tupuDataList',this.tupuDataList)
-      // this.changeTupuOptions();  
       var temp = [];
       for(let i =0;i<this.tupuDataList.length;i++){
-        console.log(this.tupuDataList[i])
         var node = this.tupuDataList[i];
         let dict = {
           value: node['name'],
           label: node['name']
         }
         temp.push(dict);
-        // if(node["value"] != '1'){
-        //   temp.push({value: node['name'], label: node['name']});
-        // }
       }
       this.optionsForTupu = temp;
       console.log("optionsForTupu1", this.optionsForTupu)
@@ -653,29 +820,22 @@ export default {
     handleChooseTupuItem(index, row){
       console.log("selection", index)
       console.log("selection", this.radioLinkTupu)
-
-      // this.radioLinkTupu[index] = value
+      // const selectedItem = this.optionsForTupu[index];
+      // this.selectedItems = Array.from(this.radioLinkTupu)
+      // let temp = []
+      // for(let i=0; i<this.radioLinkTupu.length; i++){
+      //   if(this.radioLinkTupu[i] != null){
+      //     temp.push(this.radioLinkTupu[i])
+      //   }
+      // }
+      // this.selectedItems = temp;
+      // console.log("selection", this.selectedItems)
     },
     showTupu(){
       this.isShowTupu = ! this.isShowTupu;
     },
 
     async testnet() {
-      // 1.登录获取token
-      // var token = "";
-      // await axios.get(
-      // 		`http://192.168.5.61/api/wrtmng/1/user/login?username=admin&password=admin`).then(
-      // 			(res) =>{
-      // 				token = res.result.token;
-      // 				console.log(res.result.token);
-      // 			}
-      // 		)
-      // axios.get(
-      // 	`http://192.168.5.61/api/wrtmng/1/dev/status?&name=io.gnss&args=mesh&token=${token}`.then((res)=>{
-      // 		console.log(res.result.status.devices[0].gnss);
-      // 	})
-      // )
-      // 2.获取gps
       var that = this;
       await axios
         .get(`${this.$store.state.serverURL}/testtcp2?`)
@@ -1298,11 +1458,11 @@ export default {
     },
 
     printDevOnlineList() {
-      // console.log("dev print", this.devOnlineList);
-      console.log('dev print3 deviceOnlineGpsList', this.deviceOnlineGpsList);
-      console.log('dev print3 devOnlineListName', this.devOnlineListName);
-      console.log('dev print3 radiopos', this.radiopos);
-      console.log('dev print3 other', this.otherRadioIpGpsList);
+      console.log("selection", this.radioLinkTupu);
+      // console.log('dev print3 deviceOnlineGpsList', this.deviceOnlineGpsList);
+      // console.log('dev print3 devOnlineListName', this.devOnlineListName);
+      // console.log('dev print3 radiopos', this.radiopos);
+      // console.log('dev print3 other', this.otherRadioIpGpsList);
 
       setTimeout(this.printDevOnlineList, 5000);
     },
@@ -1552,7 +1712,8 @@ export default {
       that.Cesium = Cesium;
     }
   },
-  mounted() {
+ async mounted() {
+  await this.fetchDataFromServer();
     this.init();
     // //链接网关
     // this.sdkclient = new SdkDemo();
@@ -1590,7 +1751,7 @@ export default {
     // 	}
     // })
     // // //开启动态更新坐标函数
-    // this.printDevOnlineList();
+    this.printDevOnlineList();
     // // 开启动态上传坐标进行态势感知函数
     // this.selectAndUpload();
   },

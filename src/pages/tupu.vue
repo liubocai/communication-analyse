@@ -36,6 +36,9 @@ export default {
         dataList(newValue){
             this.sendData()
         },
+        linkList(newValue){
+            this.sendData()
+        },
         selectedItems: {
            handler: function (newValue) {
            this.updateChart();
@@ -209,12 +212,15 @@ export default {
         sendData(){
             console.log("has send")
             console.log("this.dataList",this.dataList)
+            console.log("this.linkList2",this.linkList)
             // console.log("this.dataList.length",this.dataList.length)
             this.$emit('sendTupuDataList', this.dataList);
+            this.$emit('sendTupuLinkList', this.linkList);
         },
 
         readNameList() {
-            axios.get('./nameList.csv', { responseType: 'text' }).then(res => {
+            // console.log("conffffig", window.config.tomcatCsvDataUrl)
+            axios.get('http://localhost:8082/data/csv/nameList.csv', { responseType: 'text' }).then(res => {
 
                 Papa.parse(res.data, {
                     complete: parsedData => {
@@ -241,7 +247,7 @@ export default {
 
         },
         readLinkList() {
-            axios.get('./linkList.csv', { responseType: 'text' }).then(res => {
+            axios.get('http://localhost:8082/data/csv/linkList.csv', { responseType: 'text' }).then(res => {
                 Papa.parse(res.data, {
                     complete: parsedData => {
 
@@ -254,7 +260,7 @@ export default {
                             }
                             this.linkList.push(tmp)
                         }
-                        console.log(this.linkList)
+                        console.log('this.linkList', this.linkList)
                     },
                 });
             })
