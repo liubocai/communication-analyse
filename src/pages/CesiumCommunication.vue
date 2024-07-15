@@ -173,13 +173,16 @@
       <el-button style="float: left" @click="showTupu">知识图谱</el-button>
     </div>
     <div style="display: flex; justify-content: space-around; margin-top: 5px">
-      <input type="text" v-model="point" placeholder="请输入类别" style="font-size: large;">
+      <input type="text" v-model="point" placeholder="请输入名称" style="font-size: large; width:150px;">
+      <el-select v-model="Typeclass"  style="font-size: large; width:150px;" >
+        <el-option v-for="item in pointClass" :key="item" :value="item"></el-option>
+      </el-select>
       <el-button style="float: left;font-size: large;" @click="addPoint">增添</el-button>
       <el-button style="float: left;font-size: large;" @click="deletePoint">删除</el-button>
     </div>
     <div style="display: flex; justify-content: space-around; margin-top: 5px">
-      <input type="text" v-model="nodeFrom" placeholder="起点" style="font-size: large; width:120px;">
-      <input type="text" v-model="nodeTo" placeholder="终点" style="font-size: large;width:120px;">
+      <input type="text" v-model="nodeFrom" placeholder="起点" style="font-size: large; width:150px;">
+      <input type="text" v-model="nodeTo" placeholder="终点" style="font-size: large;width:150px;">
       <el-button style="float: left;font-size: large;" @click="addLink">增添</el-button>
       <el-button style="float: left;font-size: large;" @click="deleteLink">删除</el-button>
     </div>
@@ -231,6 +234,8 @@ export default {
   data() {
     return {
       // linkList: [],
+      pointClass:['卫星','无人机','无人车','应急人员','指挥车','地面接收站'],
+      Typeclass:[],
       Ground:[],
       fly: [],
       radioLinkTupu: [],
@@ -359,9 +364,9 @@ export default {
     };
   },
   watch: {
-   radioLinkTupu(newValue) {
-      let j=0
-      let k=0
+    radioLinkTupu:{
+      handler(newValue) {
+      let j=0;
       for(let i=0;i<this.fly.length;i++){
         newValue.some(item => {
          if( this.fly[i].value === item){
@@ -369,6 +374,7 @@ export default {
          }
         })
       }
+      let k=0
       for(let i=0;i<this.Ground.length;i++){
        newValue.some(item => {
           if(this.Ground[i].value === item){
@@ -379,6 +385,8 @@ export default {
       this.maxGroundNum=this.Ground.length-k
       this.maxFlyNum=this.fly.length-j
     },
+    deep: true,
+  },
     resultImgName(newValue) {
       // this.entityResult.rectangle.material = newValue;
       // this.entityResult.rectangle.material.image = newValue;
@@ -462,8 +470,6 @@ export default {
   },
   methods: {
     async addPoint() {
-      const pointPattern = /^(无人机|应急人员|卫星|无人车|指挥车|地面接收站)(\d+)$/;
-      const match = this.point.match(pointPattern);
       const typeMapping = {
         '无人机': { category: '1', imgName: '无人机' },
         '应急人员': { category: '4', imgName: '应急人员' },
@@ -472,19 +478,22 @@ export default {
         '指挥车': { category: '2', imgName: '指挥车' },
         '地面接收站': { category: '5', imgName: '卫星地面接收站' },
       };
-      if (match) {
-        const [, type, number] = match
+      if(this.tupuDataList.some(item => item.name === this.point)){
+        alert("该点位已存在") 
+        
+      }else{
+        const number='3'
         let category, imgName;
-        const mappingResult = typeMapping[type];
+        const mappingResult = typeMapping[this.Typeclass];
         if (mappingResult) {
           category = mappingResult.category;
           imgName = mappingResult.imgName;
         } else {
           console.error('Invalid type:', type);
         }
-        this.tupuDataList.push({ category, name: this.point, symbol: "image://tupuimg/" + imgName + ".png", value: number, symbolSize: 50 });
+        this.tupuDataList.push({ category, name: this.point, symbol: "image://tupuimg/" + imgName + ".png", value:number , symbolSize: 50 });
         // this.csvData=this.tupuDataList;
-        await axios.post(`${this.$store.state.serverURL}/csvNode?category=${category}&name=${this.point}&imgName=${imgName}&value=${number}`)
+        await axios.post(`${this.$store.state.serverURL}/csvNode?category=${category}&name=${this.point}&imgName=${imgName}&value=${number}}`)
           .then(response => {
             console.log(response.data);
             this.csvData.push(1)
@@ -493,18 +502,17 @@ export default {
           .catch(error => {
             console.error(error);
           });
-      } else {
-        console.error('Invalid point format');
-      }
 
       console.log("this.csvData change", this.csvData);
+      }
+     
 
     },
     async deletePoint() {
       const point = this.point;
       const Bool = this.tupuDataList.some(item => item.name === point);
       this.tupuDataList = this.tupuDataList.filter(item => item.name !== point);
-
+      
       if (Bool) {
         await axios.delete(`${this.$store.state.serverURL}/csvNode?name=${point}`)
           .then(response => {
@@ -514,12 +522,16 @@ export default {
           .catch(error => {
             console.error(error);
           });
+      }else{
+        alert("该点位不存在")
       }
     },
     async addLink() {
       const nodeFrom = this.nodeFrom
       const nodeTo = this.nodeTo
-      if (nodeFrom != null && nodeTo != null) {
+      const Bool1 = this.tupuDataList.some(item => item.name === nodeFrom);
+      const Bool2 = this.tupuDataList.some(item => item.name === nodeTo);
+      if (Bool1 && Bool2) {
         await axios.post(`${this.$store.state.serverURL}/csvLink?nodeFrom=${nodeFrom}&nodeTo=${nodeTo}`)
           .then(response => {
             console.log(response.data);
@@ -527,24 +539,33 @@ export default {
 
           })
           .catch(error => { })
+      }else{
+        alert("请检查点位重新输入")
       }
+      
+      
     },
     async deleteLink() {
       const nodeFrom = this.nodeFrom
       const nodeTo = this.nodeTo
-      if (nodeFrom != null && nodeTo != null) {
+      const Bool1 = this.tupuDataList.some(item => item.name === nodeFrom);
+      const Bool2 = this.tupuDataList.some(item => item.name === nodeTo);
+      if (Bool1 && Bool2) {
         // this.csvLink = this.csvLink.filter(item => !(item.source === nodeFrom && item.target === nodeTo));
         await axios.delete(`${this.$store.state.serverURL}/csvLink?nodeFrom=${nodeFrom}&nodeTo=${nodeTo}`) 
         .then(response => {
             this.csvLink.push(1)
           })
           .catch(error => { })
+      }else{
+        alert("请检查点位重新输入")
       }
     },
 
 
     handleTupuSend(message) {
-      this.tupuDataList = message;
+    this.tupuDataList = message;
+      console.log('this.tupuDataList', this.tupuDataList);
      const temp = this.tupuDataList
     .filter(node => node.category === '1' || node.category === '4')
     .map(node => ({ value: node.name, label: node.name }));
@@ -575,11 +596,9 @@ export default {
       }
       this.maxGroundNum=this.Ground.length-k
       this.maxFlyNum=this.fly.length-j
-      this.optionsForTupu = temp;
-      console.log("optionsForTupu1", this.optionsForTupu)
-      console.log("optionsForTupu2", this.optionsForTupu.length)
-      console.log("optionsForTupu", temp)
-    },
+     this.optionsForTupu = temp;
+     console.log("optionsForTupu", this.optionsForTupu);
+},
     handleLinkList(linkList) {
       console.log('接收到的链接列表:', linkList);
       this.tupuLinkList = linkList;
@@ -829,7 +848,6 @@ export default {
             height: tmp_coord[2]
           };
           that.radioPos.push(tmp_Point);
-
           that.ReloadAllMarkers();
         }
       };
@@ -1620,3 +1638,4 @@ export default {
   position: absolute;
 }
 </style>
+
