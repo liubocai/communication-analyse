@@ -70,9 +70,9 @@ export default {
     },
 
     computed: {
-        coloredLinkList() {
+         coloredLinkList() {
             return this.linkList.map(link => {
-                const isTargetSelected = this.selectedItems.some(item => item === link.target);
+                const isTargetSelected = this.selectedItems.some(item => item === link.target||item === link.source);
                 return {
                     ...link,
                     lineStyle: {
