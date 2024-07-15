@@ -49,35 +49,19 @@ export default {
         handler(newValue) {
             this.init()
             console.log('selectedItems:',this.selectedItems)
-        // this.color()
-        setTimeout(()=>{
-            console.log("11111111111111111111111111111111")
-            console.log(this.option)
-            if (this.option && typeof this.option === 'object') {
-                var myChart = echarts.init(document.getElementById('chart-panel'));
-                myChart.setOption(this.option);
-            }
-        },1000)
+            this.updateChart()
+       
       },
-      deep:true,
-      immediate:true
+      deep:true
     },
        csvLink:{
           handler(newValue) {
             this.init()
             console.log('selectedItems:',this.selectedItems)
-        // this.color()
-        setTimeout(()=>{
-            console.log("11111111111111111111111111111111")
-            console.log(this.option)
-            if (this.option && typeof this.option === 'object') {
-                var myChart = echarts.init(document.getElementById('chart-panel'));
-                myChart.setOption(this.option);
-            }
-        },1000)
+            this.updateChart()
+        
       },
-      deep:true,
-      immediate:true
+      deep:true
     },
     },
 
