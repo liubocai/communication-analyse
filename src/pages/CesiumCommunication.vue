@@ -172,25 +172,27 @@
     <div style="display: flex; justify-content: space-around; margin-top: 5px">
       <el-button style="float: left" @click="showTupu">知识图谱</el-button>
     </div>
-    <div style="display: flex; justify-content: space-around; margin-top: 5px">
-      <input type="text" v-model="point" placeholder="请输入名称" style="font-size: large; width:150px;">
-      <el-select v-model="Typeclass"  style="font-size: large; width:150px;" >
+    <div style="display: flex; justify-content: space-around; margin-top: 5px;">
+      <el-span style="font-size: large;">节点增删功能</el-span><el-input type="text" v-model="point" placeholder="请输入名称" style="font-size: large; width:150px;"></el-input>
+  
+       <el-select v-model="Typeclass"  style="font-size: large; width:150px;" >
         <el-option v-for="item in pointClass" :key="item" :value="item"></el-option>
       </el-select>
       <el-button style="float: left;font-size: large;" @click="addPoint">增添</el-button>
       <el-button style="float: left;font-size: large;" @click="deletePoint">删除</el-button>
     </div>
     <div style="display: flex; justify-content: space-around; margin-top: 5px">
-      <input type="text" v-model="nodeFrom" placeholder="起点" style="font-size: large; width:150px;">
-      <input type="text" v-model="nodeTo" placeholder="终点" style="font-size: large;width:150px;">
+      <el-span style="font-size: large;">关系增删功能</el-span>
+       <el-input type="text" v-model="nodeFrom" placeholder="起点" style="font-size: large; width:150px;"></el-input>
+      <el-input type="text" v-model="nodeTo" placeholder="终点" style="font-size: large;width:150px;"></el-input>
       <el-button style="float: left;font-size: large;" @click="addLink">增添</el-button>
       <el-button style="float: left;font-size: large;" @click="deleteLink">删除</el-button>
     </div>
   </div>
 
   <tupu style="position: absolute;width: 500px;height: 500px;left:600px;top:200px;z-index: 114514;"
-    v-show=this.isShowTupu @sendTupuDataList="handleTupuSend" @sendTupuLinkList="handleLinkList"
-    :selected-items="this.radioLinkTupu" :csvData="csvData" :csvLink="csvLink"></tupu>
+    v-show=this.isShowTupu @sendTupuDataList="handleTupuSend" @sendTupuLinkList="handleLinkList" @ChangeShow="handleShow"
+    :selected-items="this.radioLinkTupu" :csvData="csvData"></tupu>
 
 
   <div id="container" class="cesiumbox" style="">
@@ -242,8 +244,7 @@ export default {
       tupuLinkList: null,
       tupuDataList: null,
       optionsForTupu: [],
-      csvData: [],//用来给tupu子组件刷新
-      csvLink: [],//用来给tupu子组件刷新
+      csvData:1,//用来给tupu子组件刷新
       point: '',
       nodeFrom: '',
       nodeTo: '',
@@ -469,6 +470,10 @@ export default {
     }
   },
   methods: {
+    handleShow(msg){
+      console.log("handleShow",msg)
+      this.isShowTupu=!this.isShowTupu
+    },
     async addPoint() {
       const typeMapping = {
         '无人机': { category: '1', imgName: '无人机' },
@@ -493,10 +498,10 @@ export default {
         }
         this.tupuDataList.push({ category, name: this.point, symbol: "image://tupuimg/" + imgName + ".png", value:number, symbolSize: 50 });
         // this.csvData=this.tupuDataList;
-        await axios.post(`http://192.168.10.167:8092/csvNode?category=${category}&name=${this.point}&imgName=${imgName}&value=${number}}`)
+        await axios.post(`${this.$store.state.serverurl}/csvNode?category=${category}&name=${this.point}&imgName=${imgName}&value=${number}}`)
           .then(response => {
             console.log(response.data);
-            this.csvData.push(1)
+            this.csvData=this.csvData+1
 
           })
           .catch(error => {
@@ -514,10 +519,10 @@ export default {
       this.tupuDataList = this.tupuDataList.filter(item => item.name !== point);
       
       if (Bool) {
-        await axios.delete(`http://192.168.10.167:8092/csvNode?name=${point}`)
+        await axios.delete(`${this.$store.state.serverurl}/csvNode?name=${point}`)
           .then(response => {
             console.log(response.data);
-            this.csvData.push(1)
+            this.csvData=this.csvData+1
           })
           .catch(error => {
             console.error(error);
@@ -532,11 +537,10 @@ export default {
       const Bool1 = this.tupuDataList.some(item => item.name === nodeFrom);
       const Bool2 = this.tupuDataList.some(item => item.name === nodeTo);
       if (Bool1 && Bool2) {
-        await axios.post(`http://192.168.10.167:8092/csvLink?nodeFrom=${nodeFrom}&nodeTo=${nodeTo}`)
+        await axios.post(`${this.$store.state.serverurl}/csvLink?nodeFrom=${nodeFrom}&nodeTo=${nodeTo}`)
           .then(response => {
             console.log(response.data);
-            this.csvLink.push(1)
-
+            this.csvData=this.csvData+1
           })
           .catch(error => { })
       }else{
@@ -552,9 +556,9 @@ export default {
       const Bool2 = this.tupuDataList.some(item => item.name === nodeTo);
       if (Bool1 && Bool2) {
         // this.csvLink = this.csvLink.filter(item => !(item.source === nodeFrom && item.target === nodeTo));
-        await axios.delete(`http://192.168.10.167:8092/csvLink?nodeFrom=${nodeFrom}&nodeTo=${nodeTo}`) 
+        await axios.delete(`${this.$store.state.serverurl}/csvLink?nodeFrom=${nodeFrom}&nodeTo=${nodeTo}`) 
         .then(response => {
-            this.csvLink.push(1)
+          this.csvData=this.csvData+1
           })
           .catch(error => { })
       }else{
@@ -609,13 +613,12 @@ export default {
     },
     showTupu() {
       this.isShowTupu = !this.isShowTupu;
-      this.csvData.push(1);
     },
 
     async testnet() {
       var that = this;
       await axios
-        .get(`http://192.168.10.167:8092/testtcp2?`)
+        .get(`${this.$store.state.serverurl}/testtcp2?`)
         .then((res) => {
           console.log(res);
           that.otherRadioIpGpsList = res.data;
@@ -1093,7 +1096,7 @@ export default {
       that.$store.state.upLoadProgress = 0;
       const jsonString = JSON.stringify(send);
       axios
-        .post(`http://192.168.10.167:8092/uploadRadioPos?`, {
+        .post(`${this.$store.state.serverurl}/uploadRadioPos?`, {
           data: jsonString
         })
         .then((res) => {
@@ -1295,7 +1298,7 @@ export default {
       var that = this;
       sendData = JSON.stringify(sendData);
       axios
-        .post(`http://192.168.10.167:8092/analysePlanRadio?`, {
+        .post(`${this.$store.state.serverurl}/analysePlanRadio?`, {
           data: sendData
         })
         .then((res) => {
@@ -1638,4 +1641,3 @@ export default {
   position: absolute;
 }
 </style>
-

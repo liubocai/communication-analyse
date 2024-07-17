@@ -3,6 +3,7 @@
     <!-- 为 ECharts 准备一个定义了宽高的 DOM -->
     <div id='chart'>
         <h3 class="b h3-with-close">关系图谱</h3>
+        <span class="close-icon" @click="ChangeShow">×</span>
         <hr>
         <div id="chart-panel" style="width:500px;
         height:450px;
@@ -22,11 +23,11 @@ export default {
     name: '11',
     props: {
         selectedItems: Array, // 定义接收的prop类型
-        csvData: Array,
-        csvLink: Array
+        csvData: Number,
     },
     data() {
         return {
+            show:false,
             myChart: null,
             dataList: [],
             linkList: [],
@@ -48,21 +49,8 @@ export default {
         },
         csvData: {
             async handler(newValue) {
-                console.log("csvData更新了", this.dataList)
                 await this.readNameList()
                 await this.readLinkList()
-                console.log("csvData更新了", this.dataList)
-                console.log('selectedItems:', this.selectedItems)
-                this.updateChart()
-            },
-            deep: true
-        },
-        csvLink: {
-            async handler(newValue) {
-                console.log("csvLink更新了")
-                await this.readNameList()
-                await this.readLinkList()
-                console.log('selectedItems:', this.selectedItems)
                 this.updateChart()
             },
             deep: true
@@ -192,10 +180,15 @@ export default {
     },
 
     methods: {
+        ChangeShow() {
+            console.log("ChangeShow")
+            this.$emit('ChangeShow',this.show)
+        },
         updateChart() {
             console.log("this.option datalist", this.option.series[0].data)            
             this.myChart.setOption(this.option);
-        },        sendData() {
+        },        
+        sendData() {
             console.log("has send")
             console.log("this.dataList", this.dataList)
             console.log("this.linkList2", this.linkList)
@@ -290,26 +283,24 @@ export default {
     height: 7%;
     background-color: rgba(7, 65, 122, 0.95);
     color: #c6cee7;
-    /*设置文字颜色*/
     font-weight: bolder;
-    /*设置文字宽度*/
-    /* padding-top: 2px;
-    padding-left: 20px; */
+    position: relative;
     font-size: 20px;
     box-shadow: inset 0px 0px 5px 0px rgba(123, 180, 218, 0.8);
     border-radius: 5px;
 }
-
-span {
-    position: absolute;
-    top: -10px;
-    right: 0;
-    text-shadow: none;
-    font-size: 30px;
-    cursor: pointer;
-    color: #c6cee7;
+.close-icon {
+  position: absolute;
+  right: 10px;
+  top: -10px;
+  color: white; 
+  font-size: 40px; 
+  cursor: pointer; 
 }
 
+.close-icon:hover {
+  color: #cc0000; 
+}
 hr {
     border: 0;
     height: 1px;
