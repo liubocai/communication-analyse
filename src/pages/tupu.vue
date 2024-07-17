@@ -5,8 +5,8 @@
         <h3 class="b h3-with-close">关系图谱</h3>
         <span class="close-icon" @click="ChangeShow">×</span>
         <hr>
-        <div id="chart-panel" style="width:500px;
-        height:450px;
+        <div id="chart-panel" style="width:350px;
+        height:350px;
         box-shadow: inset 0px 0px 0px 0px rgba(123, 180, 218,0.8);
         background-color:rgba(7, 65, 122, 0.95);
         border-radius: 5px;">

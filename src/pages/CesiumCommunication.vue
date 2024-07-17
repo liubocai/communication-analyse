@@ -15,7 +15,7 @@
   </div>
   <input v-show="false" ref="uploadGeoJSON" type="file" style="margin-top: 10px" name="file" id="file" accept=".geojson"
     @change="ChooseFile($event)" />
-  <el-button v-show="handImport" style="position: absolute; left: 120px; top: 400px; z-index: 2200" type="primary"
+  <el-button v-show="handImport" style="position: absolute; left: 120px; top: 230px; z-index: 2200" type="primary"
     size="mini" @click.prevent="importGeoJSON" link>手动导入GeoJSON文件
   </el-button>
   <!-- <el-button v-show="handImport" style="position: absolute;left:120px ;top: 500px;z-index: 2200;" type="primary"
@@ -43,7 +43,7 @@
       <label style="font-size: 15px; font-weight: bold">已选电台点位</label>
 
       <el-table :data="radioPos" empty-text=" "
-        style="width: 100%; height: 300px; max-height: 300px; margin-top: 10px; background-color: #19284b; font-size: small;"
+        style="width: 100%; height: 200px;  margin-top: 10px; background-color: #19284b; font-size: 12px;"
         default-expand-all stripe size="mini" row-key="index" ref="multipleTable"
         @selection-change="handleSelectionChange1">
         <el-table-column type="selection" width="30" :selectable="selectable1" />
@@ -100,29 +100,29 @@
     <div style="display: flex; flex-direction: column">
       <div style="font-size: 11px; display: flex;justify-content: space-around;">
         <div class='text-min'>
-          <span class="text-span">最大可用地面点数量</span>
+          <span class="text-span">最大可用地面点数量 </span>
           <el-input-number v-model="maxGroundNum" :precision="0" :max="200" size="small" :controls="false"
-            style="width: 50px" />
+            style="width: 35%" />
         </div>
 
         <div class='text-min'>
-          <span class="text-span">地面最大允许架高值</span>
+          <span class="text-span">地面最大允许架高值<span style="color:#19284b ;">---</span></span>
           <el-input-number v-model="maxGroundHeight" :precision="2" :max="200" size="small" :controls="false"
-            style="width: 70px" />
+            style="width: 35%" />
         </div>
       </div>
       <div style="font-size: 11px; display: flex;justify-content: space-around;">
-        <div class='text-min'> <span class="text-span">最大可用空中点数量</span><el-input-number v-model="maxFlyNum"
-            :precision="0" :max="200" size="small" :controls="false" style="width: 50px" /></div>
+        <div class='text-min'> <span class="text-span">最大可用空中点数量 </span><el-input-number v-model="maxFlyNum"
+            :precision="0" :max="200" size="small" :controls="false" style="width: 35%" /></div>
         <div class='text-min'> <span class="text-span">空中节点最大飞行高度</span><el-input-number v-model="maxFlyHeight"
-            :precision="2" :max="500" size="small" :controls="false" style="width: 70px" /></div>
+            :precision="2" :max="500" size="small" :controls="false" style="width: 35%" /></div>
 
       </div>
       <div style="font-size: 11px;display: flex;justify-content: space-around;">
-        <div class='text-min'> <span class="text-span">通信覆盖范围</span><el-input-number v-model="maxComputeRadioDistance"
-            :precision="0" :max="10000" size="small" :controls="false" style="width: 70px" /></div>
-        <div class='text-min'> <span class="text-span">采样点间隔</span><el-input-number v-model="samplePointInterval"
-            :precision="2" :max="500" size="small" :controls="false" style="width: 70px" /></div>
+        <div class='text-min'> <span class="text-span">通信覆盖范围<span style="color:#19284b ;">--------</span></span><el-input-number v-model="maxComputeRadioDistance"
+            :precision="0" :max="10000" size="small" :controls="false" style="width: 35%" /></div>
+        <div class='text-min'> <span class="text-span">采样点间隔<span style="color:#19284b ;">--------------</span></span><el-input-number v-model="samplePointInterval"
+            :precision="2" :max="500" size="small" :controls="false" style="width: 35%;" /></div>
 
       </div>
     </div>
@@ -134,10 +134,10 @@
 
     <el-table :data="planRadio" empty-text=" " style="
         width: 100%;
-        height: 300px;
-        max-height: 300px;
+        height: 100px;
         margin-top: 10px;
         overflow-y: auto;
+        overflow-x:auto ;
         font-size: small;
         background-color: #19284b;
       " row-key="index" default-expand-all stripe size="mini" @selection-change="handleSelectionChange2">
@@ -168,29 +168,34 @@
         </template>
       </el-table-column>
     </el-table>
-
+  
     <div style="display: flex; justify-content: space-around; margin-top: 5px">
       <el-button style="float: left" @click="showTupu">知识图谱</el-button>
     </div>
     <div style="display: flex; justify-content: space-around; margin-top: 5px;">
-      <el-span style="font-size: large;">节点增删功能</el-span><el-input type="text" v-model="point" placeholder="请输入名称" style="font-size: large; width:150px;"></el-input>
-  
-       <el-select v-model="Typeclass"  style="font-size: large; width:150px;" >
+      <el-span style="font-size: 13px;">节点</el-span>
+      <el-input type="text" v-model="point" placeholder="请输入名称" style="font-size: 10px;height: 30px; width:150px;"></el-input>
+       <el-select v-model="Typeclass"  style="font-size: 10px; height: 30px;width:150px;" >
         <el-option v-for="item in pointClass" :key="item" :value="item"></el-option>
       </el-select>
-      <el-button style="float: left;font-size: large;" @click="addPoint">增添</el-button>
-      <el-button style="float: left;font-size: large;" @click="deletePoint">删除</el-button>
+      <el-button style="float: left;font-size: 13px;" @click="addPoint">增添</el-button>
+      <el-button style="float: left;font-size: 13px;" @click="deletePoint">删除</el-button>
+
     </div>
     <div style="display: flex; justify-content: space-around; margin-top: 5px">
-      <el-span style="font-size: large;">关系增删功能</el-span>
-       <el-input type="text" v-model="nodeFrom" placeholder="起点" style="font-size: large; width:150px;"></el-input>
-      <el-input type="text" v-model="nodeTo" placeholder="终点" style="font-size: large;width:150px;"></el-input>
-      <el-button style="float: left;font-size: large;" @click="addLink">增添</el-button>
-      <el-button style="float: left;font-size: large;" @click="deleteLink">删除</el-button>
+      <el-span style="font-size: 13px;">关系</el-span>
+       <el-input type="text" v-model="nodeFrom" placeholder="起点" style="font-size: 13px; height: 30px;width:150px;"></el-input>
+      <el-input type="text" v-model="nodeTo" placeholder="终点" style="font-size: 13px;height: 30px;width:150px;"></el-input>
+      <el-button style="float: left;font-size: 13px;" @click="addLink">增添</el-button>
+      <el-button style="float: left;font-size: 13px;" @click="deleteLink">删除</el-button>
+    </div>
+    <div style="display: flex; justify-content: space-around; margin-top: 5px">
+      <el-input type="text" v-model="K_number" placeholder="K值选择" style="font-size: 13px; "></el-input>
+      <el-button style="float: left">聚类</el-button>
     </div>
   </div>
 
-  <tupu style="position: absolute;width: 500px;height: 500px;left:600px;top:200px;z-index: 114514;"
+  <tupu style="position: absolute;width: 350px;height: 350px;left:400px;top:200px;z-index: 114514;"
     v-show=this.isShowTupu @sendTupuDataList="handleTupuSend" @sendTupuLinkList="handleLinkList" @ChangeShow="handleShow"
     :selected-items="this.radioLinkTupu" :csvData="csvData"></tupu>
 
@@ -212,14 +217,15 @@
   </div>
 </template>
 <script>
+import { number } from 'echarts';
 import tupu from './tupu.vue'
 import axios from 'axios';
-import service from '@/userinfo/request';
-import destroy from 'readable-stream/lib/internal/streams/destroy';
-import { mcs8Client } from '@/sdk/mcs8Client.js';
-import SdkDemo from '@/sdk/sdkDemo.js';
-// import net from 'net'
-import io from 'socket.io-client';
+// import service from '@/userinfo/request';
+// import destroy from 'readable-stream/lib/internal/streams/destroy';
+// import { mcs8Client } from '@/sdk/mcs8Client.js';
+// import SdkDemo from '@/sdk/sdkDemo.js';
+// // import net from 'net'
+// import io from 'socket.io-client';
 
 export default {
   components: {
@@ -236,6 +242,7 @@ export default {
   data() {
     return {
       // linkList: [],
+      K_number:null,
       pointClass:['卫星','无人机','无人车','应急人员','指挥车','地面接收站'],
       Typeclass:[],
       Ground:[],
@@ -470,9 +477,19 @@ export default {
     }
   },
   methods: {
+    async K_means(){
+        if(this.K_number>0&&this.radioPos.length>0){
+        await axios.post(`${this.$store.state.serverurl}/K_means?Arrey=${this.radioPos}&K=${this.K_number}`).then(res=>{
+          console.log('response:',response)
+        })
+      }else{
+        alert("请先选择K值和点位")
+      }
+    },
     handleShow(msg){
       console.log("handleShow",msg)
       this.isShowTupu=!this.isShowTupu
+  
     },
     async addPoint() {
       const typeMapping = {
@@ -502,7 +519,6 @@ export default {
           .then(response => {
             console.log(response.data);
             this.csvData=this.csvData+1
-
           })
           .catch(error => {
             console.error(error);
@@ -510,12 +526,10 @@ export default {
 
       console.log("this.csvData change", this.csvData);
       }
-     
-
     },
     async deletePoint() {
       const point = this.point;
-      const Bool = this.tupuDataList.some(item => item.name === point);
+      const Bool = this.tupuDataList.some(item => item.name === point&&item.symbol=="image://tupuimg/"+this.Typeclass+".png");
       this.tupuDataList = this.tupuDataList.filter(item => item.name !== point);
       
       if (Bool) {
@@ -546,8 +560,6 @@ export default {
       }else{
         alert("请检查点位重新输入")
       }
-      
-      
     },
     async deleteLink() {
       const nodeFrom = this.nodeFrom
@@ -565,8 +577,6 @@ export default {
         alert("请检查点位重新输入")
       }
     },
-
-
     handleTupuSend(message) {
     this.tupuDataList = message;
       console.log('this.tupuDataList', this.tupuDataList);
@@ -725,7 +735,6 @@ export default {
           });
       }
     },
-
     changeLayer() {
       if (!this.isStreetLayer) {
         this.isStreetLayer = true;
@@ -1542,97 +1551,79 @@ export default {
 
 <style scoped>
 .text-span {
-  min-width: 130px;
+  min-width: 80px;
   display: inline-block;
-  line-height: 28px
+  line-height: 28px;
 }
 
 .text-min {
   text-align: left;
   min-width: 50%;
 }
-
 #cesiumContainer {
   height: calc(100vh - 59px);
 }
 
 .cesiumbox {
-  margin-left: 20%;
+  margin-left: 25%;
   height: calc(100vh - 59px);
   z-index: 0;
-  width: 80%;
+  width: 75%;
   position: absolute;
 }
 
 .operationTable {
+  overflow-y: auto;
   background-color: #19284b;
   border: 1px solid;
   box-sizing: border-box;
   border-color: #969696;
-  width: 20%;
+  width: 25%;
   height: calc(100vh - 59px);
   left: 0px;
   position: absolute;
   color: aliceblue;
-  overflow: hidden;
+  /* overflow: hidden; */
   display: inline-block;
   /* margin-left: 6px; */
 }
-
 .hide .el-upload--picture-card {
   display: none;
 }
 
-.Hide {
-  background-size: cover;
-  /* 或者其他适合的大小调整值 */
-  background-position: center;
-  /* 图片位置 */
-  border: none;
-  /* 移除边框 */
-  padding: 0;
-  /* 移除内边距 */
-  position: absolute;
+.Hide,
+.Resize,
+.Change {
+  position: fixed;
   right: 20px;
+  z-index: 1;
+  opacity: 0.7;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  background-size: cover;
+  background-position: center;
+}
+
+.Hide {
   bottom: 80px;
   height: 40px;
   width: 45px;
-  cursor: pointer;
-  z-index: 1;
-  opacity: 0.7;
 }
 
 .Resize {
-  position: absolute;
-  right: 20px;
   bottom: 30px;
   height: 40px;
-  cursor: pointer;
-  z-index: 1;
-  opacity: 0.7;
   background-color: rgb(123, 195, 7);
   border-color: gray;
+  width: 45px;
 }
 
 .Change {
-  background-size: cover;
-  /* 或者其他适合的大小调整值 */
-  background-position: center;
-  /* 图片位置 */
-  border: none;
-  /* 移除边框 */
-  padding: 0;
-  /* 移除内边距 */
-  position: absolute;
-  right: 20px;
   bottom: 130px;
   height: 40px;
   width: 45px;
-  cursor: pointer;
-  z-index: 1;
-  opacity: 0.7;
 }
-
 .modal {
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 114514;
