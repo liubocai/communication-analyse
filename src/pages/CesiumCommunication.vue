@@ -191,7 +191,7 @@
           @click="StartSign1">
           {{ signName }}
         </el-button>
-      <el-input type="text" v-show="this.sign" v-model="K_number" placeholder="K值选择" style="font-size: 13px;float:left; width: 40%;height: 30px;"></el-input>
+      <el-input type="text" v-show="this.sign" v-model="K_number" placeholder="K值选择(正整数)" style="font-size: 13px;float:left; width: 40%;height: 30px;"></el-input>
       <el-button v-show="this.sign" style="float: left" @click="K_means">聚类</el-button>
     </div>
   </div>
@@ -501,6 +501,10 @@ export default {
       } else {
         this.viewer.entities.remove(this.currentPolygonEntity);
       }
+    }
+    if(this.K_number<1){
+      alert("请输入正确的聚类数")
+      return 
     }
       const temp=[]
     this.radioPos.forEach(item => temp.push([item.lat, item.lon]));
