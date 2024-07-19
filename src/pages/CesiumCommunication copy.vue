@@ -1350,7 +1350,7 @@ export default {
         CreditsDisplay: false,
         timeline: false,
         homeButton: false, // home按钮
-        navigationHelpButton: false,
+        
         shouldAnimate: false,
         animation: false,
         orderIndependentTranslucency: true,

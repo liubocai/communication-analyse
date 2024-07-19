@@ -15,7 +15,7 @@
   </div>
   <input v-show="false" ref="uploadGeoJSON" type="file" style="margin-top: 10px" name="file" id="file" accept=".geojson"
     @change="ChooseFile($event)" />
-  <el-button v-show="handImport" style="position: absolute; left: 120px; top: 230px; z-index: 2200" type="primary"
+  <el-button v-show="handImport" style="position: absolute; left: 8vw; top: 230px; z-index: 2200" type="primary"
     size="mini" @click.prevent="importGeoJSON" link>手动导入GeoJSON文件
   </el-button>
   <!-- <el-button v-show="handImport" style="position: absolute;left:120px ;top: 500px;z-index: 2200;" type="primary"
@@ -42,7 +42,7 @@
       <hr />
       <label style="font-size: 15px; font-weight: bold">已选电台点位</label>
 
-      <el-table :data="radioPos" empty-text=" "
+      <el-table :data="radioPos"  empty-text=" "
         style="width: 100%; height: 200px;  margin-top: 10px; background-color: #19284b; font-size: 12px;"
         default-expand-all stripe size="mini" row-key="index" ref="multipleTable"
         @selection-change="handleSelectionChange1">
@@ -55,14 +55,12 @@
         </el-table-column>
         <el-table-column label="高程" width="60" align="center" prop="height">
         </el-table-column>
-
         <el-table-column align="right" label="操作" width="60">
           <template #default="scope">
             <el-button size="mini" @click.prevent="handleCheck(scope.$index, scope.row)" link>查看
             </el-button>
           </template>
         </el-table-column>
-
         <el-table-column align="right" label="选择" width="120">
           <template #default="scope">
             <el-select v-model=this.radioLinkTupu[scope.$index] placeholder="Select">
@@ -70,7 +68,6 @@
             </el-select>
           </template>
         </el-table-column>
-
         <el-table-column>
           <template #default="scope">
             <el-button size="mini" @click.prevent="handleDelete(scope.$index, scope.row)" link style="color: red">删除
@@ -79,7 +76,7 @@
         </el-table-column>
       </el-table>
       <div style="display: flex">
-        <el-button size="small" style="width: 90px; margin-top: 10px; margin-left: 4%; color: #00aaff"
+        <el-button size="small"  v-show="!this.sign" style="width: 90px; margin-top: 10px; margin-left: 4%; color: #00aaff"
           @click="StartSign">
           {{ signBtnName }}
         </el-button>
@@ -155,7 +152,7 @@
 
       <el-table-column align="right" label="选择" width="120">
         <template #default="scope">
-          <el-select v-model=this.radioLinkTupu[scope.$index+this.radioPos.length] placeholder="Select">
+          <el-select v-model=this.radioLinkTupu[scope.$index] placeholder="Select">
             <el-option v-for="item in optionsForTupu" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </template>
@@ -174,7 +171,7 @@
     </div>
     <div style="display: flex; justify-content: space-around; margin-top: 5px;">
       <el-span style="font-size: 13px;">节点</el-span>
-      <el-input type="text" v-model="point" placeholder="请输入名称" style="font-size: 10px;height: 30px; width:150px;"></el-input>
+      <el-input type="text" v-model="point" placeholder="请输入名称" style="font-size: 13px;height: 30px; width:150px;"></el-input>
        <el-select v-model="Typeclass"  style="font-size: 10px; height: 30px;width:150px;" >
         <el-option v-for="item in pointClass" :key="item" :value="item"></el-option>
       </el-select>
@@ -190,12 +187,15 @@
       <el-button style="float: left;font-size: 13px;" @click="deleteLink">删除</el-button>
     </div>
     <div style="display: flex; justify-content: space-around; margin-top: 5px">
-      <el-input type="text" v-model="K_number" placeholder="K值选择" style="font-size: 13px; "></el-input>
-      <el-button style="float: left">聚类</el-button>
+      <el-button size="small" v-show="!this.signMode" style="width:40% ; float: left;margin-left: 12px; color: #00aaff;height: 30px"
+          @click="StartSign1">
+          {{ signName }}
+        </el-button>
+      <el-input type="text" v-show="this.sign" v-model="K_number" placeholder="K值选择" style="font-size: 13px;float:left; width: 40%;height: 30px;"></el-input>
+      <el-button v-show="this.sign" style="float: left" @click="K_means">聚类</el-button>
     </div>
   </div>
-
-  <tupu style="position: absolute;width: 350px;height: 350px;left:400px;top:200px;z-index: 114514;"
+  <tupu style="position: absolute;width: 350px;height: 350px;left:25vw;top:200px;z-index: 114514;"
     v-show=this.isShowTupu @sendTupuDataList="handleTupuSend" @sendTupuLinkList="handleLinkList" @ChangeShow="handleShow"
     :selected-items="this.radioLinkTupu" :csvData="csvData"></tupu>
 
@@ -220,12 +220,6 @@
 import { number } from 'echarts';
 import tupu from './tupu.vue'
 import axios from 'axios';
-// import service from '@/userinfo/request';
-// import destroy from 'readable-stream/lib/internal/streams/destroy';
-// import { mcs8Client } from '@/sdk/mcs8Client.js';
-// import SdkDemo from '@/sdk/sdkDemo.js';
-// // import net from 'net'
-// import io from 'socket.io-client';
 
 export default {
   components: {
@@ -242,6 +236,8 @@ export default {
   data() {
     return {
       // linkList: [],
+      currentPolygonEntity: [],
+      clusters:null,
       K_number:null,
       pointClass:['卫星','无人机','无人车','应急人员','指挥车','地面接收站'],
       Typeclass:[],
@@ -292,7 +288,7 @@ export default {
       dialogFormVisible: false,
       dialogFormVisibleSignPoint: false,
       signMode: false,
-
+      sign:false,
       viewer: null,
       Cesium: null,
       projectOptions: [
@@ -333,9 +329,7 @@ export default {
       primitiveManager: null,
       entityResult: null,
       resultImgName: '',
-
       //liubocai
-
       gatewayUrl: 'https://192.168.5.100:7715',
       username: '1101',
       password: '000000',
@@ -405,8 +399,8 @@ export default {
     inviteCode(newValue) {
       if (newValue == 1) {
         // this.viewer.terrainProvider = new Cesium.CesiumTerrainProvider({
-        // 	url: "http://localhost:8082/data/terraintiles/guangxi_guilin_dsmtiles/",
-        // 	// url: "http://localhost:8080/terrain/guangxi_guilin_dsmtiles/",
+        // 	url: "http://192.168.10.167:8082/data/terraintiles/guangxi_guilin_dsmtiles/",
+        // 	// url: "http://192.168.10.167:8080/terrain/guangxi_guilin_dsmtiles/",
         // 	requestVertexNormals: true
         // })
         // this.viewer.camera.flyTo({
@@ -425,8 +419,8 @@ export default {
         this.tifname = 'guangxi_guilin_dsmWGS84_5.tif';
       } else if (newValue == 2) {
         this.viewer.terrainProvider = new Cesium.CesiumTerrainProvider({
-          url: 'http://localhost:8082/data/terraintiles/guangxi_nanning_dsmtiles/',
-          // url: "http://localhost:8080/terrain/guangxi_nanning_dsmtiles/",
+          url: 'http://192.168.10.167:8082/data/terraintiles/guangxi_nanning_dsmtiles/',
+          // url: "http://192.168.10.167:8080/terrain/guangxi_nanning_dsmtiles/",
 
           requestVertexNormals: true
         });
@@ -437,8 +431,8 @@ export default {
         });
       } else if (newValue == 3) {
         this.viewer.terrainProvider = new Cesium.CesiumTerrainProvider({
-          url: 'http://localhost:8082/data/terraintiles/wuhan_dsmtiles/',
-          // url: 'http://localhost:8080/terrain/wuhan_dsmtiles/',
+          url: 'http://192.168.10.167:8082/data/terraintiles/wuhan_dsmtiles/',
+          // url: 'http://192.168.10.167:8080/terrain/wuhan_dsmtiles/',
           requestVertexNormals: true
         });
         this.viewer.camera.flyTo({
@@ -450,6 +444,13 @@ export default {
     }
   },
   computed: {
+//     randomColor() {
+//   const r = Math.floor(Math.random() * 256);
+//   const g = Math.floor(Math.random() * 256);
+//   const b = Math.floor(Math.random() * 256);
+//   return Cesium.Color.rgb(r,g,b).withAlpha(0.5);
+// },
+
     handImport() {
       if (this.radioPosLength == 0) {
         return true;
@@ -464,6 +465,13 @@ export default {
         return '选择电台点位';
       }
     },
+    signName(){
+      if (this.sign) {
+        return '完成（可以进行聚类）';
+      } else {
+        return '开始选择点(不可聚类)';
+      }
+    },
     loadingMsg() {
       return this.$store.state.loadingMsg;
     },
@@ -472,21 +480,220 @@ export default {
         return {
           cursor: 'crosshair'
         };
-      } else {
+      } else if(this.sign){
+        return {
+          cursor: 'crosshair'
+        }
+      }else{
+        return{
+          
+        }
       }
     }
   },
   methods: {
-    async K_means(){
-        if(this.K_number>0&&this.radioPos.length>0){
-        await axios.post(`${this.$store.state.serverurl}/K_means?Arrey=${this.radioPos}&K=${this.K_number}`).then(res=>{
-          console.log('response:',response)
-        })
-      }else{
-        alert("请先选择K值和点位")
+    async K_means() {
+      if (this.currentPolygonEntity) {
+      if (Array.isArray(this.currentPolygonEntity)) {
+        this.currentPolygonEntity.forEach(entity => {
+          this.viewer.entities.remove(entity);
+        });
+      } else {
+        this.viewer.entities.remove(this.currentPolygonEntity);
       }
-    },
-    handleShow(msg){
+    }
+      const temp=[]
+    this.radioPos.forEach(item => temp.push([item.lat, item.lon]));
+    const colorPalette = [
+  Cesium.Color.AQUA,
+  Cesium.Color.AQUAMARINE,
+  Cesium.Color.AZURE,
+  Cesium.Color.BEIGE,
+  Cesium.Color.BISQUE,
+  Cesium.Color.BLACK,
+  Cesium.Color.BLUE,
+  Cesium.Color.BLUEVIOLET,
+  Cesium.Color.BROWN,
+  Cesium.Color.CADETBLUE,
+  Cesium.Color.CHARTREUSE,
+  Cesium.Color.CHOCOLATE,
+  Cesium.Color.CORAL,
+  Cesium.Color.CORNFLOWERBLUE,
+  Cesium.Color.CORNSILK,
+  Cesium.Color.CRIMSON,
+  Cesium.Color.CYAN,
+  Cesium.Color.DARKGOLDENROD,
+  Cesium.Color.DARKGREEN,
+  Cesium.Color.DARKKHAKI,
+  Cesium.Color.DARKMAGENTA,
+  Cesium.Color.DARKOLIVEGREEN,
+  Cesium.Color.DARKORANGE,
+  Cesium.Color.DARKORCHID,
+  Cesium.Color.DARKRED,
+  Cesium.Color.DARKSALMON,
+  Cesium.Color.DARKSEAGREEN,
+  Cesium.Color.DARKSLATEBLUE,
+  Cesium.Color.DARKSLATEGREY,
+  Cesium.Color.DARKTURQUOISE,
+  Cesium.Color.DARKVIOLET,
+  Cesium.Color.DEEPPINK,
+  Cesium.Color.DEEPSKYBLUE,
+  Cesium.Color.DIMGREY,
+  Cesium.Color.DODGERBLUE,
+  Cesium.Color.FIREBRICK,
+  Cesium.Color.FLORALWHITE,
+  Cesium.Color.FORESTGREEN,
+  Cesium.Color.FUCHSIA,
+  Cesium.Color.GAINSBORO,
+  Cesium.Color.GHOSTWHITE,
+  Cesium.Color.GOLD,
+  Cesium.Color.GOLDENROD,
+  Cesium.Color.GREY,
+  Cesium.Color.GREENYELLOW,
+  Cesium.Color.HONEYDEW,
+  Cesium.Color.HOTPINK,
+  Cesium.Color.INDIGO,
+  Cesium.Color.IVORY,
+  Cesium.Color.KHAKI,
+  Cesium.Color.LAVENDER,
+  Cesium.Color.LAVENDERBLUSH,
+  Cesium.Color.LAWNGREEN,
+  Cesium.Color.LEMONCHIFFON,
+  Cesium.Color.LIGHTBLUE,
+  Cesium.Color.LIGHTCORAL,
+  Cesium.Color.LIGHTCYAN,
+  Cesium.Color.LIGHTGOLDENRODYELLOW,
+  Cesium.Color.LIGHTGREEN,
+  Cesium.Color.LIGHTPINK,
+  Cesium.Color.LIGHTSALMON,
+  Cesium.Color.LIGHTSEAGREEN,
+  Cesium.Color.LIGHTSKYBLUE,
+  Cesium.Color.LIGHTSLATEGREY,
+  Cesium.Color.LIGHTSTEELBLUE,
+  Cesium.Color.LIGHTYELLOW,
+  Cesium.Color.LIME,
+  Cesium.Color.LIMEGREEN,
+  Cesium.Color.LINEN,
+  Cesium.Color.MAGENTA,
+  Cesium.Color.MAROON,
+  Cesium.Color.MEDIUMAQUAMARINE,
+  Cesium.Color.MEDIUMBLUE,
+  Cesium.Color.MEDIUMORCHID,
+  Cesium.Color.MEDIUMPURPLE,
+  Cesium.Color.MEDIUMSEAGREEN,
+  Cesium.Color.MEDIUMSLATEBLUE,
+  Cesium.Color.MEDIUMSPRINGGREEN,
+  Cesium.Color.MEDIUMTURQUOISE,
+  Cesium.Color.MEDIUMVIOLETRED,
+  Cesium.Color.MIDNIGHTBLUE,
+  Cesium.Color.MINTCREAM,
+  Cesium.Color.MISTYROSE,
+  Cesium.Color.MOCCASIN,
+  Cesium.Color.NAVAJOWHITE,
+  Cesium.Color.NAVY,
+  Cesium.Color.OLDLACE,
+  Cesium.Color.OLIVE,
+  Cesium.Color.OLIVEDRAB,
+  Cesium.Color.ORANGE,
+  Cesium.Color.ORANGERED,
+  Cesium.Color.ORCHID,
+  Cesium.Color.PALEGOLDENROD,
+  Cesium.Color.PALEGREEN,
+  Cesium.Color.PALETURQUOISE,
+  Cesium.Color.PALEVIOLETRED,
+  Cesium.Color.PAPAYAWHIP,
+  Cesium.Color.PEACHPUFF,
+  Cesium.Color.PERU,
+  Cesium.Color.PINK,
+  Cesium.Color.PLUM,
+  Cesium.Color.POWDERBLUE,
+  Cesium.Color.PURPLE,
+  Cesium.Color.REBECCAPURPLE,
+  Cesium.Color.RED,
+  Cesium.Color.ROSYBROWN,
+  Cesium.Color.ROYALBLUE,
+  Cesium.Color.SADDLEBROWN,
+  Cesium.Color.SALMON,
+  Cesium.Color.SANDYBROWN,
+  Cesium.Color.SEAGREEN,
+  Cesium.Color.SEASHELL,
+  Cesium.Color.SIENNA,
+  Cesium.Color.SILVER,
+  Cesium.Color.SKYBLUE,
+  Cesium.Color.SLATEBLUE,
+  Cesium.Color.SLATEGREY,
+  Cesium.Color.SNOW,
+  Cesium.Color.SPRINGGREEN,
+  Cesium.Color.STEELBLUE,
+  Cesium.Color.TAN,
+  Cesium.Color.TEAL,
+  Cesium.Color.THISTLE,
+  Cesium.Color.TOMATO,
+  Cesium.Color.TURQUOISE,
+  Cesium.Color.VIOLET,
+  Cesium.Color.WHEAT,
+  Cesium.Color.WHITE,
+  Cesium.Color.WHITESMOKE,
+  Cesium.Color.YELLOW,
+  Cesium.Color.YELLOWGREEN,
+    ];
+      if (this.K_number > 0 && this.radioPos.length > 0) {
+          try {
+               const response = await axios.post(`${this.$store.state.serverurl}/Km`, {
+                        data: temp,
+                        K: Number(this.K_number)
+                 }, {
+                 headers: {
+                      'Content-Type': 'application/json' 
+                 }
+                 });
+                this.clusters =await response.data;
+                console.log('Clusters:', this.clusters);
+
+                for(let i = 0; i < this.K_number; i++) {
+                    if(this.clusters[i].length <=1){
+                       continue
+                      }
+                let minLon = Infinity, maxLon = -Infinity;
+                let minLat = Infinity, maxLat = -Infinity;
+                this.clusters[i].forEach(point => {
+                minLon = Math.min(minLon, point[1]);
+                maxLon = Math.max(maxLon, point[1]);
+                minLat = Math.min(minLat, point[0]);
+                maxLat = Math.max(maxLat, point[0]);
+                });
+
+                const boundingBoxPoints = [
+                      Cesium.Cartesian3.fromDegrees(minLon, minLat),
+                      Cesium.Cartesian3.fromDegrees(maxLon, minLat), 
+                      Cesium.Cartesian3.fromDegrees(maxLon, maxLat), 
+                      Cesium.Cartesian3.fromDegrees(minLon, maxLat), 
+  ];
+                boundingBoxPoints.push(boundingBoxPoints[0]);
+                const color = colorPalette[i % colorPalette.length].withAlpha(0.5);
+                const boundingPolygon = new Cesium.PolygonGraphics({
+                  hierarchy: boundingBoxPoints,
+                  material: color, 
+                  outline: true,
+                  outlineColor: Cesium.Color.BLACK,
+                  outlineWidth: 2
+                });
+                const entity = this.viewer.entities.add({
+                         polygon: boundingPolygon
+                });
+                this.currentPolygonEntity.push(entity);
+}
+
+      
+    } catch (error) {
+      console.error('获取聚类数据时出错:', error);
+      alert('获取聚类数据失败，请检查网络或服务器状态');
+    }
+  } else {
+    alert("请先选择K值和点位");
+  }
+},   
+ handleShow(msg){
       console.log("handleShow",msg)
       this.isShowTupu=!this.isShowTupu
   
@@ -741,8 +948,8 @@ export default {
         this.nanningStreetLayer =
           this.viewer.scene.imageryLayers.addImageryProvider(
             new Cesium.UrlTemplateImageryProvider({
-              url: 'http://localhost:8082/data/imagetiles/nanningstreet/{z}/{x}/{y}.png',
-              // url: 'http://localhost:8080/imagetiles/nanningstreet/{z}/{x}/{y}.png',
+              url: 'http://192.168.10.167:8082/data/imagetiles/nanningstreet/{z}/{x}/{y}.png',
+              // url: 'http://192.168.10.167:8080/imagetiles/nanningstreet/{z}/{x}/{y}.png',
 
               transparent: true,
               color: Cesium.Color.WHITE.withAlpha(0.2)
@@ -751,8 +958,8 @@ export default {
         this.guilinStreetLayer =
           this.viewer.scene.imageryLayers.addImageryProvider(
             new Cesium.UrlTemplateImageryProvider({
-              // url: 'http://localhost:8080/imagetiles/guilinstreet/{z}/{x}/{y}.png',
-              url: 'http://localhost:8082/data/imagetiles/guilinstreet/{z}/{x}/{y}.png',
+              // url: 'http://192.168.10.167:8080/imagetiles/guilinstreet/{z}/{x}/{y}.png',
+              url: 'http://192.168.10.167:8082/data/imagetiles/guilinstreet/{z}/{x}/{y}.png',
               transparent: true,
               color: Cesium.Color.WHITE.withAlpha(0.2)
             })
@@ -760,8 +967,8 @@ export default {
         this.wuhanStreetLayer =
           this.viewer.scene.imageryLayers.addImageryProvider(
             new Cesium.UrlTemplateImageryProvider({
-              // url: 'http://localhost:8080/imagetiles/wuhanstreet/{z}/{x}/{y}.png',
-              url: 'http://localhost:8082/data/imagetiles/wuhanstreet/{z}/{x}/{y}.png',
+              // url: 'http://192.168.10.167:8080/imagetiles/wuhanstreet/{z}/{x}/{y}.png',
+              url: 'http://192.168.10.167:8082/data/imagetiles/wuhanstreet/{z}/{x}/{y}.png',
               transparent: true,
               color: Cesium.Color.WHITE.withAlpha(0.2)
             })
@@ -889,8 +1096,9 @@ export default {
     },
     handleDelete(index, row) {
       this.radioPos.splice(index, 1);
-      this.radioPosLength = this.radioPosLength - 1;
-      this.radioLinkTupu[index] = "";
+     
+      this.radioPosLength = this.radioPosLength - 1; 
+      this.radioLinkTupu.splice(index, 1);
       this.ReloadAllMarkers();
     },
     headUpload(params) {
@@ -924,6 +1132,13 @@ export default {
         this.signMode = true;
       } else {
         this.signMode = false;
+      }
+    },
+    StartSign1() {
+      if (this.signName == '开始选择点(不可聚类)') {
+        this.sign = true;
+      } else {
+        this.sign = false;
       }
     },
     Resize() {
@@ -1160,7 +1375,6 @@ export default {
 
     getDeviceOnlineList() {
       var that = this;
-
       if (this.sdkclient.mConnected) {
         this.sdkclient
           .requestMsg2GatewayServer('getDevOnlineList', {})
@@ -1281,6 +1495,7 @@ export default {
     },
     handleDelPrinfo(index, row) {
       this.planRadio.splice(index, 1);
+      
     },
     analysePlanRadio() {
       // if (this.planRadio.length != 1){
@@ -1373,9 +1588,9 @@ export default {
 
       //添加3dtiles
       let tileset = new Cesium.Cesium3DTileset({
-        // url: 'http://localhost:8080/data/3DTiles/guangxiguilin/tileset.json',
-        url: 'http://localhost:8082/data/3DTiles/gx/tileset.json',
-        // url: 'http://localhost:9003/model/toCSgzpO1/tileset.json',
+        // url: 'http://192.168.10.167:8080/data/3DTiles/guangxiguilin/tileset.json',
+        url: 'http://192.168.10.167:8082/data/3DTiles/gx/tileset.json',
+        // url: 'http://192.168.10.167:9003/model/toCSgzpO1/tileset.json',
         // url: this.$config.tilesurl1,
         //【重要】数值加大，能让最终成像变模糊
         // ScreenSpaceErrorFactor: 16,
@@ -1419,32 +1634,32 @@ export default {
       //添加卫星影像切片
       viewer.scene.imageryLayers.addImageryProvider(
         new Cesium.UrlTemplateImageryProvider({
-          // url: 'http://localhost:8080/imagetiles/guilin1/{z}/{x}/{y}.png',
-          url: 'http://localhost:8082/data/imagetiles/guilin1/{z}/{x}/{y}.png',
+          // url: 'http://192.168.10.167:8080/imagetiles/guilin1/{z}/{x}/{y}.png',
+          url: 'http://192.168.10.167:8082/data/imagetiles/guilin1/{z}/{x}/{y}.png',
           transparent: true,
           color: Cesium.Color.WHITE.withAlpha(0.2)
         })
       );
       viewer.scene.imageryLayers.addImageryProvider(
         new Cesium.UrlTemplateImageryProvider({
-          // url: 'http://localhost:8080/imagetiles/guilin2/{z}/{x}/{y}.png',
-          url: 'http://localhost:8082/data/imagetiles/guilin2/{z}/{x}/{y}.png',
+          // url: 'http://192.168.10.167:8080/imagetiles/guilin2/{z}/{x}/{y}.png',
+          url: 'http://192.168.10.167:8082/data/imagetiles/guilin2/{z}/{x}/{y}.png',
           transparent: true,
           color: Cesium.Color.WHITE.withAlpha(0.2)
         })
       );
       viewer.scene.imageryLayers.addImageryProvider(
         new Cesium.UrlTemplateImageryProvider({
-          // url: 'http://localhost:8080/imagetiles/nanning/{z}/{x}/{y}.png',
-          url: 'http://localhost:8082/data/imagetiles/nanning/{z}/{x}/{y}.png',
+          // url: 'http://192.168.10.167:8080/imagetiles/nanning/{z}/{x}/{y}.png',
+          url: 'http://192.168.10.167:8082/data/imagetiles/nanning/{z}/{x}/{y}.png',
           transparent: true,
           color: Cesium.Color.WHITE.withAlpha(0.2)
         })
       );
       viewer.scene.imageryLayers.addImageryProvider(
         new Cesium.UrlTemplateImageryProvider({
-          // url: 'http://localhost:8080/imagetiles/wuhan/{z}/{x}/{y}.png',
-          url: 'http://localhost:8082/data/imagetiles/wuhan/{z}/{x}/{y}.png',
+          // url: 'http://192.168.10.167:8080/imagetiles/wuhan/{z}/{x}/{y}.png',
+          url: 'http://192.168.10.167:8082/data/imagetiles/wuhan/{z}/{x}/{y}.png',
           transparent: true,
           color: Cesium.Color.WHITE.withAlpha(0.2)
         })
@@ -1494,7 +1709,29 @@ export default {
           that.radioPos.push(tmp_Point);
           that.radioPosLength = that.radioPosLength + 1;
           that.ReloadAllMarkers();
+        }else if(that.sign){
+          let tmp_Point = {
+            lon: lon,
+            lat: lat,
+            height: height
+          };
+          that.radioPos.push(tmp_Point);
+          that.radioPosLength = that.radioPosLength + 1;
+          that.ReloadAllMarkers();
+          // that.radioPosLength = that.radioPosLength + 1;
+          // that.ReloadAllMarkers();
         }
+
+        // if(that.sign){
+        //   let tmp_Point = {
+        //     lon: lon,
+        //     lat: lat,
+        //     height: height
+        //   };
+        //   that.radioPos.push(tmp_Point);
+        //   that.radioPosLength = that.radioPosLength + 1;
+        //   that.ReloadAllMarkers();
+        // }
       }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
       that.viewer = viewer;
@@ -1574,6 +1811,7 @@ export default {
 
 .operationTable {
   overflow-y: auto;
+  overflow-x:auto ;
   background-color: #19284b;
   border: 1px solid;
   box-sizing: border-box;

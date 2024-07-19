@@ -772,7 +772,6 @@ export default {
 			if (this.sdkclient.mConnected) {
 				this.sdkclient.requestMsg2GatewayServer("getDevOnlineList", {}).then(res => {
 					const prefix = "3402000000132";
-					// 创建正则表达式，其中^表示字符串开始，{n}表示前n位精确匹配
 					const regex = new RegExp("^" + prefix.replace(/ /g, "\\s") + ".*");
 					var data = res.Content
 					var dict = {}
