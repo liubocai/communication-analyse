@@ -125,6 +125,7 @@
     </div>
 
     <div style="display: flex; justify-content: space-around; margin-top: 5px">
+      <el-button style="float: left;" @click="showTupu">知识图谱</el-button>
       <el-button style="float: left" @click="analysePlanRadio">补点分析</el-button>
       <el-button style="float: left" @click="continueUpload">继续更新</el-button>
     </div>
@@ -165,10 +166,6 @@
         </template>
       </el-table-column>
     </el-table>
-  
-    <div style="display: flex; justify-content: space-around; margin-top: 5px">
-      <el-button style="float: left" @click="showTupu">知识图谱</el-button>
-    </div>
     <div style="display: flex; justify-content: space-around; margin-top: 5px;">
       <el-span style="font-size: 13px;">节点</el-span>
       <el-input type="text" v-model="point" placeholder="请输入名称" style="font-size: 13px;height: 30px; width:150px;"></el-input>
@@ -508,6 +505,10 @@ export default {
     }
       const temp=[]
     this.radioPos.forEach(item => temp.push([item.lat, item.lon]));
+    if(this.K_number>temp.length){
+      alert("聚类数不能大于点位数")
+      return
+    }
     const colorPalette = [
   Cesium.Color.AQUA,
   Cesium.Color.AQUAMARINE,
@@ -643,7 +644,7 @@ export default {
     ];
       if (this.K_number > 0 && this.radioPos.length > 0) {
           try {
-               const response = await axios.post(`${this.$store.state.serverurl}/Km`, {
+               const response = await axios.post(`http://localhost:8092/Km`, {
                         data: temp,
                         K: Number(this.K_number)
                  }, {
@@ -653,8 +654,8 @@ export default {
                  });
                 this.clusters =await response.data;
                 console.log('Clusters:', this.clusters);
-
-                for(let i = 0; i < this.K_number; i++) {
+                
+                for(let i = 0; i < this.clusters.length; i++) {
                     if(this.clusters[i].length <=1){
                        continue
                       }
