@@ -502,7 +502,7 @@ export default {
         this.viewer.entities.remove(this.currentPolygonEntity);
       }
     }
-    if(this.K_number<1){
+    if(this.K_number<1){  
       alert("请输入正确的聚类数")
       return 
     }
