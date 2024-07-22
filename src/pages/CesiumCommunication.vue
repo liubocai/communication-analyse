@@ -556,8 +556,9 @@ export default {
         });
         this.tifname = 'guangxi_guilin_dsmWGS84_5.tif';
       } else if (newValue == 2) {
+        this.viewer.scene.primitives.show = true;
         this.viewer.terrainProvider = new Cesium.CesiumTerrainProvider({
-          url: 'http://192.168.10.167:8082/data/terraintiles/guangxi_nanning_dsmtiles/',
+          url: `${this.$store.state.dataServerUrl}`+'/data/terraintiles/guangxi_nanning_dsmtiles/',
           // url: "http://192.168.10.167:8080/terrain/guangxi_nanning_dsmtiles/",
 
           requestVertexNormals: true
@@ -568,8 +569,9 @@ export default {
           duration: 1.5
         });
       } else if (newValue == 3) {
+        this.viewer.scene.primitives.show = true;
         this.viewer.terrainProvider = new Cesium.CesiumTerrainProvider({
-          url: 'http://192.168.10.167:8082/data/terraintiles/wuhan_dsmtiles/',
+          url: `${this.$store.state.dataServerUrl}`+'/data/terraintiles/wuhan_dsmtiles/',
           // url: 'http://192.168.10.167:8080/terrain/wuhan_dsmtiles/',
           requestVertexNormals: true
         });
@@ -681,7 +683,7 @@ export default {
                       Cesium.Cartesian3.fromDegrees(maxLon, minLat), 
                       Cesium.Cartesian3.fromDegrees(maxLon, maxLat), 
                       Cesium.Cartesian3.fromDegrees(minLon, maxLat), 
-  ];
+                ];
                 boundingBoxPoints.push(boundingBoxPoints[0]);
                 const color = this.colorPalette[i % this.colorPalette.length].withAlpha(0.5);
                 const boundingPolygon = new Cesium.PolygonGraphics({
@@ -698,7 +700,6 @@ export default {
 }
       } catch (error) {
       console.error('获取聚类数据时出错:', error);
-      alert('获取聚类数据失败，请检查网络或服务器状态');
     }
     },
   async K_means() {
@@ -913,7 +914,7 @@ export default {
     async testnet() {
       var that = this;
       await axios
-        .get(`${this.$store.state.serverurl}/testtcp2?`)
+        .get(`${this.$store.state.serverurl}/testtcp?`)
         .then((res) => {
           console.log(res);
           that.otherRadioIpGpsList = res.data;
@@ -1026,7 +1027,7 @@ export default {
         this.nanningStreetLayer =
           this.viewer.scene.imageryLayers.addImageryProvider(
             new Cesium.UrlTemplateImageryProvider({
-              url: 'http://192.168.10.167:8082/data/imagetiles/nanningstreet/{z}/{x}/{y}.png',
+              url: `${this.$store.state.dataServerUrl}`+'/data/imagetiles/nanningstreet/{z}/{x}/{y}.png',
               // url: 'http://192.168.10.167:8080/imagetiles/nanningstreet/{z}/{x}/{y}.png',
 
               transparent: true,
@@ -1037,7 +1038,7 @@ export default {
           this.viewer.scene.imageryLayers.addImageryProvider(
             new Cesium.UrlTemplateImageryProvider({
               // url: 'http://192.168.10.167:8080/imagetiles/guilinstreet/{z}/{x}/{y}.png',
-              url: 'http://192.168.10.167:8082/data/imagetiles/guilinstreet/{z}/{x}/{y}.png',
+              url: `${this.$store.state.dataServerUrl}`+'/data/imagetiles/guilinstreet/{z}/{x}/{y}.png',
               transparent: true,
               color: Cesium.Color.WHITE.withAlpha(0.2)
             })
@@ -1046,7 +1047,7 @@ export default {
           this.viewer.scene.imageryLayers.addImageryProvider(
             new Cesium.UrlTemplateImageryProvider({
               // url: 'http://192.168.10.167:8080/imagetiles/wuhanstreet/{z}/{x}/{y}.png',
-              url: 'http://192.168.10.167:8082/data/imagetiles/wuhanstreet/{z}/{x}/{y}.png',
+              url: `${this.$store.state.dataServerUrl}`+'/data/imagetiles/wuhanstreet/{z}/{x}/{y}.png',
               transparent: true,
               color: Cesium.Color.WHITE.withAlpha(0.2)
             })
@@ -1359,7 +1360,7 @@ export default {
             ),
             material: new Cesium.ImageMaterialProperty({
               image:
-                '${this.$store.state.serverurl}/resultimages/result_img' + i + '.png', // 替换为你自己的图片路径
+                `${this.$store.state.serverurl}`+'/resultimages/result_img'+i+'.png', // 替换为你自己的图片路径
               color: Cesium.Color.WHITE.withAlpha(0.6), //0.2
               transparent: true
             })
@@ -1388,7 +1389,6 @@ export default {
       this.setRowSelected();
       this.isRunning = true;
       var that = this;
-      // that.imgLoading = true
       let send = {
         radioPos: this.radioPos,
         tifname: this.tifname,
@@ -1397,6 +1397,7 @@ export default {
       };
       that.$store.state.upLoadProgress = 0;
       const jsonString = JSON.stringify(send);
+      console.log(`${this.$store.state.serverurl}/uploadRadioPos?`);
       axios
         .post(`${this.$store.state.serverurl}/uploadRadioPos?`, {
           data: jsonString
@@ -1524,7 +1525,7 @@ export default {
         }
       }
       //0620新需求，添加另一种方式获得电台坐标的数据
-      this.testnet();
+      // this.testnet();
 
       for (let key in this.otherRadioIpGpsList) {
         tempName.push(key);
@@ -1539,7 +1540,9 @@ export default {
     },
 
     printDevOnlineList() {
-      console.log("selection", this.radioLinkTupu);
+      // console.log("selection", this.radioLinkTupu);
+      console.log("print", this.radioPos);
+      
       // console.log('dev print3 deviceOnlineGpsList', this.deviceOnlineGpsList);
       // console.log('dev print3 devOnlineListName', this.devOnlineListName);
       // console.log('dev print3 radiopos', this.radiopos);
@@ -1599,6 +1602,7 @@ export default {
       };
       var that = this;
       sendData = JSON.stringify(sendData);
+
       axios
         .post(`${this.$store.state.serverurl}/analysePlanRadio?`, {
           data: sendData
@@ -1666,9 +1670,7 @@ export default {
 
       //添加3dtiles
       let tileset = new Cesium.Cesium3DTileset({
-        // url: 'http://192.168.10.167:8080/data/3DTiles/guangxiguilin/tileset.json',
-        url: 'http://192.168.10.167:8082/data/3DTiles/gx/tileset.json',
-        // url: 'http://192.168.10.167:9003/model/toCSgzpO1/tileset.json',
+        url: `${this.$store.state.dataServerUrl}`+'/data/3DTiles/gx/tileset.json',
         // url: this.$config.tilesurl1,
         //【重要】数值加大，能让最终成像变模糊
         // ScreenSpaceErrorFactor: 16,
@@ -1713,7 +1715,7 @@ export default {
       viewer.scene.imageryLayers.addImageryProvider(
         new Cesium.UrlTemplateImageryProvider({
           // url: 'http://192.168.10.167:8080/imagetiles/guilin1/{z}/{x}/{y}.png',
-          url: 'http://192.168.10.167:8082/data/imagetiles/guilin1/{z}/{x}/{y}.png',
+          url: `${this.$store.state.dataServerUrl}`+'/data/imagetiles/guilin1/{z}/{x}/{y}.png',
           transparent: true,
           color: Cesium.Color.WHITE.withAlpha(0.2)
         })
@@ -1721,7 +1723,7 @@ export default {
       viewer.scene.imageryLayers.addImageryProvider(
         new Cesium.UrlTemplateImageryProvider({
           // url: 'http://192.168.10.167:8080/imagetiles/guilin2/{z}/{x}/{y}.png',
-          url: 'http://192.168.10.167:8082/data/imagetiles/guilin2/{z}/{x}/{y}.png',
+          url: `${this.$store.state.dataServerUrl}`+'/data/imagetiles/guilin2/{z}/{x}/{y}.png',
           transparent: true,
           color: Cesium.Color.WHITE.withAlpha(0.2)
         })
@@ -1729,7 +1731,7 @@ export default {
       viewer.scene.imageryLayers.addImageryProvider(
         new Cesium.UrlTemplateImageryProvider({
           // url: 'http://192.168.10.167:8080/imagetiles/nanning/{z}/{x}/{y}.png',
-          url: 'http://192.168.10.167:8082/data/imagetiles/nanning/{z}/{x}/{y}.png',
+          url: `${this.$store.state.dataServerUrl}`+'/data/imagetiles/nanning/{z}/{x}/{y}.png',
           transparent: true,
           color: Cesium.Color.WHITE.withAlpha(0.2)
         })
@@ -1737,7 +1739,7 @@ export default {
       viewer.scene.imageryLayers.addImageryProvider(
         new Cesium.UrlTemplateImageryProvider({
           // url: 'http://192.168.10.167:8080/imagetiles/wuhan/{z}/{x}/{y}.png',
-          url: 'http://192.168.10.167:8082/data/imagetiles/wuhan/{z}/{x}/{y}.png',
+          url: `${this.$store.state.dataServerUrl}`+'/data/imagetiles/wuhan/{z}/{x}/{y}.png',
           transparent: true,
           color: Cesium.Color.WHITE.withAlpha(0.2)
         })
@@ -1750,6 +1752,7 @@ export default {
 
       var handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
       handler.setInputAction(function (evt) {
+        var cartographic = null;
         //优先判断是否拾取到3dtiles模型
         let pickedObject = viewer.scene.pick(evt.position);
         // 判断是否拾取到模型
@@ -1761,13 +1764,13 @@ export default {
           // 是否获取到空间坐标
           if (Cesium.defined(cartesian)) {
             // // 空间坐标转世界坐标(弧度)
-            var cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+            cartographic = Cesium.Cartographic.fromCartesian(cartesian);
           }
         } else {
           //没有3dtiles模型则返回一个地形高度
           // 返回一个ray和地球表面的一个交点的Cartesian3坐标。
           let ray = viewer.camera.getPickRay(evt.position);
-          cartesian = viewer.scene.globe.pick(ray, viewer.scene);
+          let cartesian = viewer.scene.globe.pick(ray, viewer.scene);
           // // 空间坐标转世界坐标(弧度)
           cartographic = Cesium.Cartographic.fromCartesian(cartesian);
         }
@@ -1796,20 +1799,7 @@ export default {
           that.radioPos.push(tmp_Point);
           that.radioPosLength = that.radioPosLength + 1;
           that.ReloadAllMarkers();
-          // that.radioPosLength = that.radioPosLength + 1;
-          // that.ReloadAllMarkers();
         }
-
-        // if(that.sign){
-        //   let tmp_Point = {
-        //     lon: lon,
-        //     lat: lat,
-        //     height: height
-        //   };
-        //   that.radioPos.push(tmp_Point);
-        //   that.radioPosLength = that.radioPosLength + 1;
-        //   that.ReloadAllMarkers();
-        // }
       }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
       that.viewer = viewer;
@@ -1823,10 +1813,10 @@ export default {
     // this.sdkclient = new SdkDemo();
     // this.sdkclient.connect(this.gatewayUrl, this.username, this.password, null, null)
 
-    //获取设备名字
-    setTimeout(this.getDevList, 500);
-    //获取在线设备列表
-    setTimeout(this.getDeviceOnlineList, 1000);
+    // //获取设备名字
+    // setTimeout(this.getDevList, 500);
+    // //获取在线设备列表
+    // setTimeout(this.getDeviceOnlineList, 1000);
 
 
     // //添加监听器
@@ -1855,7 +1845,7 @@ export default {
     // 	}
     // })
     // // //开启动态更新坐标函数
-    //this.printDevOnlineList();
+    this.printDevOnlineList();
     // // 开启动态上传坐标进行态势感知函数
     // this.selectAndUpload();
   },
