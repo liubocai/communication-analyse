@@ -527,13 +527,6 @@ export default {
     },
     deep: true,
   },
-    resultImgName(newValue) {
-      // this.entityResult.rectangle.material = newValue;
-      // this.entityResult.rectangle.material.image = newValue;
-      // console.log("监听到变化了！!!!!");
-      // this.ReloadAllMarkers();
-      // this.viewer.scene.requestRender();
-    },
     inviteCode(newValue) {
       if (newValue == 1) {
         // this.viewer.terrainProvider = new Cesium.CesiumTerrainProvider({
@@ -634,14 +627,14 @@ export default {
   methods: {
     async DBSCAN(){
       if (this.currentPolygonEntity) {
-      if (Array.isArray(this.currentPolygonEntity)) {
-        this.currentPolygonEntity.forEach(entity => {
-          this.viewer.entities.remove(entity);
-        });
-      } else {
-        this.viewer.entities.remove(this.currentPolygonEntity);
+        if (Array.isArray(this.currentPolygonEntity)) {
+            this.currentPolygonEntity.forEach(entity => {
+              this.viewer.entities.remove(entity);
+            });
+        } else {
+            this.viewer.entities.remove(this.currentPolygonEntity);
+        }
       }
-    }
     if(this.eps<=0){
       alert("请输入正确的eps值")
       return
@@ -749,7 +742,7 @@ export default {
                       Cesium.Cartesian3.fromDegrees(maxLon, minLat), 
                       Cesium.Cartesian3.fromDegrees(maxLon, maxLat), 
                       Cesium.Cartesian3.fromDegrees(minLon, maxLat), 
-  ];
+                ];
                 boundingBoxPoints.push(boundingBoxPoints[0]);
                 const color = this.colorPalette[i % this.colorPalette.length].withAlpha(0.5);
                 const boundingPolygon = new Cesium.PolygonGraphics({
@@ -916,7 +909,7 @@ export default {
       await axios
         .get(`${this.$store.state.serverurl}/testtcp?`)
         .then((res) => {
-          console.log(res);
+          // console.log(res);
           that.otherRadioIpGpsList = res.data;
         });
     },
@@ -980,6 +973,16 @@ export default {
         return;
       }
       console.log('重新开始态势更新');
+      //清除聚类结果，
+      if (this.currentPolygonEntity) {
+        if (Array.isArray(this.currentPolygonEntity)) {
+            this.currentPolygonEntity.forEach(entity => {
+              this.viewer.entities.remove(entity);
+            });
+        } else {
+            this.viewer.entities.remove(this.currentPolygonEntity);
+        }
+      }
       this.planRadio = [];
       this.lines = [];
       this.rectangles = [];
@@ -1215,8 +1218,10 @@ export default {
     },
     StartSign1() {
       if (this.signName == '开始选择点(不可聚类)') {
+        this.isAnalying = true;
         this.sign = true;
       } else {
+        this.isAnalying = false;
         this.sign = false;
       }
     },
@@ -1397,7 +1402,7 @@ export default {
       };
       that.$store.state.upLoadProgress = 0;
       const jsonString = JSON.stringify(send);
-      console.log(`${this.$store.state.serverurl}/uploadRadioPos?`);
+
       axios
         .post(`${this.$store.state.serverurl}/uploadRadioPos?`, {
           data: jsonString
@@ -1422,6 +1427,8 @@ export default {
               type: 'error',
               duration: 3000
             });
+            that.isRunning = false;
+
             // this.imgLoading = false
           }
         });
@@ -1525,7 +1532,7 @@ export default {
         }
       }
       //0620新需求，添加另一种方式获得电台坐标的数据
-      // this.testnet();
+      this.testnet();
 
       for (let key in this.otherRadioIpGpsList) {
         tempName.push(key);
@@ -1620,7 +1627,6 @@ export default {
               alert('不满足，请添加最大可用点');
               that.isAnalying = false;
               that.isRunning = false;
-              // that.selectAndUpload()
               return;
             }
             //更新图片
@@ -1845,9 +1851,9 @@ export default {
     // 	}
     // })
     // // //开启动态更新坐标函数
-    this.printDevOnlineList();
+    // this.printDevOnlineList();
     // // 开启动态上传坐标进行态势感知函数
-    // this.selectAndUpload();
+    this.selectAndUpload();
   },
 
   destroyed() { }
