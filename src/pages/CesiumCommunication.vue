@@ -187,9 +187,15 @@
       <el-button size="small" v-show="!this.signMode" style="width:40% ; float: left;margin-left: 12px; color: #00aaff;height: 30px"
           @click="StartSign1">
           {{ signName }}
-        </el-button>
-      <el-input type="text" v-show="this.sign" v-model="K_number" placeholder="K值选择(正整数)" style="font-size: 13px;float:left; width: 40%;height: 30px;"></el-input>
-      <el-button v-show="this.sign" style="float: left" @click="K_means">聚类</el-button>
+        </el-button> 
+        <el-button v-show="this.sign" style="float: left" @click="K_means">K_means</el-button>
+        <el-button v-show="this.sign" style="float: left" @click="DBSCAN">DBSCAN</el-button>
+    </div>
+    <div style="display: flex; justify-content: space-around; margin-top: 5px">
+      <el-input type="text" v-show="this.sign" v-model="K_number" placeholder="K值正整数)" style="font-size: 13px;float:left; "></el-input>
+      <el-input type="text" v-show="this.sign" v-model="eps" placeholder="eps(邻域半径)" style="font-size: 13px;float:left; "></el-input>
+      <el-input type="text" v-show="this.sign" v-model="minPts" placeholder="minPts(正整数)" style="font-size: 13px;float:left;"></el-input>
+     
     </div>
   </div>
   <tupu style="position: absolute;width: 350px;height: 350px;left:25vw;top:200px;z-index: 114514;"
@@ -233,9 +239,144 @@ export default {
   data() {
     return {
       // linkList: [],
+      colorPalette:[
+  Cesium.Color.AQUA,
+  Cesium.Color.AQUAMARINE,
+  Cesium.Color.AZURE,
+  Cesium.Color.BEIGE,
+  Cesium.Color.BISQUE,
+  Cesium.Color.BLACK,
+  Cesium.Color.BLUE,
+  Cesium.Color.BLUEVIOLET,
+  Cesium.Color.BROWN,
+  Cesium.Color.CADETBLUE,
+  Cesium.Color.CHARTREUSE,
+  Cesium.Color.CHOCOLATE,
+  Cesium.Color.CORAL,
+  Cesium.Color.CORNFLOWERBLUE,
+  Cesium.Color.CORNSILK,
+  Cesium.Color.CRIMSON,
+  Cesium.Color.CYAN,
+  Cesium.Color.DARKGOLDENROD,
+  Cesium.Color.DARKGREEN,
+  Cesium.Color.DARKKHAKI,
+  Cesium.Color.DARKMAGENTA,
+  Cesium.Color.DARKOLIVEGREEN,
+  Cesium.Color.DARKORANGE,
+  Cesium.Color.DARKORCHID,
+  Cesium.Color.DARKRED,
+  Cesium.Color.DARKSALMON,
+  Cesium.Color.DARKSEAGREEN,
+  Cesium.Color.DARKSLATEBLUE,
+  Cesium.Color.DARKSLATEGREY,
+  Cesium.Color.DARKTURQUOISE,
+  Cesium.Color.DARKVIOLET,
+  Cesium.Color.DEEPPINK,
+  Cesium.Color.DEEPSKYBLUE,
+  Cesium.Color.DIMGREY,
+  Cesium.Color.DODGERBLUE,
+  Cesium.Color.FIREBRICK,
+  Cesium.Color.FLORALWHITE,
+  Cesium.Color.FORESTGREEN,
+  Cesium.Color.FUCHSIA,
+  Cesium.Color.GAINSBORO,
+  Cesium.Color.GHOSTWHITE,
+  Cesium.Color.GOLD,
+  Cesium.Color.GOLDENROD,
+  Cesium.Color.GREY,
+  Cesium.Color.GREENYELLOW,
+  Cesium.Color.HONEYDEW,
+  Cesium.Color.HOTPINK,
+  Cesium.Color.INDIGO,
+  Cesium.Color.IVORY,
+  Cesium.Color.KHAKI,
+  Cesium.Color.LAVENDER,
+  Cesium.Color.LAVENDERBLUSH,
+  Cesium.Color.LAWNGREEN,
+  Cesium.Color.LEMONCHIFFON,
+  Cesium.Color.LIGHTBLUE,
+  Cesium.Color.LIGHTCORAL,
+  Cesium.Color.LIGHTCYAN,
+  Cesium.Color.LIGHTGOLDENRODYELLOW,
+  Cesium.Color.LIGHTGREEN,
+  Cesium.Color.LIGHTPINK,
+  Cesium.Color.LIGHTSALMON,
+  Cesium.Color.LIGHTSEAGREEN,
+  Cesium.Color.LIGHTSKYBLUE,
+  Cesium.Color.LIGHTSLATEGREY,
+  Cesium.Color.LIGHTSTEELBLUE,
+  Cesium.Color.LIGHTYELLOW,
+  Cesium.Color.LIME,
+  Cesium.Color.LIMEGREEN,
+  Cesium.Color.LINEN,
+  Cesium.Color.MAGENTA,
+  Cesium.Color.MAROON,
+  Cesium.Color.MEDIUMAQUAMARINE,
+  Cesium.Color.MEDIUMBLUE,
+  Cesium.Color.MEDIUMORCHID,
+  Cesium.Color.MEDIUMPURPLE,
+  Cesium.Color.MEDIUMSEAGREEN,
+  Cesium.Color.MEDIUMSLATEBLUE,
+  Cesium.Color.MEDIUMSPRINGGREEN,
+  Cesium.Color.MEDIUMTURQUOISE,
+  Cesium.Color.MEDIUMVIOLETRED,
+  Cesium.Color.MIDNIGHTBLUE,
+  Cesium.Color.MINTCREAM,
+  Cesium.Color.MISTYROSE,
+  Cesium.Color.MOCCASIN,
+  Cesium.Color.NAVAJOWHITE,
+  Cesium.Color.NAVY,
+  Cesium.Color.OLDLACE,
+  Cesium.Color.OLIVE,
+  Cesium.Color.OLIVEDRAB,
+  Cesium.Color.ORANGE,
+  Cesium.Color.ORANGERED,
+  Cesium.Color.ORCHID,
+  Cesium.Color.PALEGOLDENROD,
+  Cesium.Color.PALEGREEN,
+  Cesium.Color.PALETURQUOISE,
+  Cesium.Color.PALEVIOLETRED,
+  Cesium.Color.PAPAYAWHIP,
+  Cesium.Color.PEACHPUFF,
+  Cesium.Color.PERU,
+  Cesium.Color.PINK,
+  Cesium.Color.PLUM,
+  Cesium.Color.POWDERBLUE,
+  Cesium.Color.PURPLE,
+  Cesium.Color.REBECCAPURPLE,
+  Cesium.Color.RED,
+  Cesium.Color.ROSYBROWN,
+  Cesium.Color.ROYALBLUE,
+  Cesium.Color.SADDLEBROWN,
+  Cesium.Color.SALMON,
+  Cesium.Color.SANDYBROWN,
+  Cesium.Color.SEAGREEN,
+  Cesium.Color.SEASHELL,
+  Cesium.Color.SIENNA,
+  Cesium.Color.SILVER,
+  Cesium.Color.SKYBLUE,
+  Cesium.Color.SLATEBLUE,
+  Cesium.Color.SLATEGREY,
+  Cesium.Color.SNOW,
+  Cesium.Color.SPRINGGREEN,
+  Cesium.Color.STEELBLUE,
+  Cesium.Color.TAN,
+  Cesium.Color.TEAL,
+  Cesium.Color.THISTLE,
+  Cesium.Color.TOMATO,
+  Cesium.Color.TURQUOISE,
+  Cesium.Color.VIOLET,
+  Cesium.Color.WHEAT,
+  Cesium.Color.WHITE,
+  Cesium.Color.WHITESMOKE,
+  Cesium.Color.YELLOW,
+  Cesium.Color.YELLOWGREEN,
+    ],
       currentPolygonEntity: [],
       clusters:null,
       K_number:null,
+      eps:null,
+      minPts:null,
       pointClass:['卫星','无人机','无人车','应急人员','指挥车','地面接收站'],
       Typeclass:[],
       Ground:[],
@@ -489,7 +630,7 @@ export default {
     }
   },
   methods: {
-    async K_means() {
+    async DBSCAN(){
       if (this.currentPolygonEntity) {
       if (Array.isArray(this.currentPolygonEntity)) {
         this.currentPolygonEntity.forEach(entity => {
@@ -499,154 +640,21 @@ export default {
         this.viewer.entities.remove(this.currentPolygonEntity);
       }
     }
-    if(this.K_number<1){  
-      alert("请输入正确的聚类数")
-      return 
-    }
-      const temp=[]
-    this.radioPos.forEach(item => temp.push([item.lat, item.lon]));
-    if(this.K_number>temp.length){
-      alert("聚类数不能大于点位数")
+    if(this.eps<=0){
+      alert("请输入正确的eps值")
+      return
+    }else if(this.minPts<=0&&this.minPts>temp.length-1){
+      alert("请输入正确的minPts值")
       return
     }
-    const colorPalette = [
-  Cesium.Color.AQUA,
-  Cesium.Color.AQUAMARINE,
-  Cesium.Color.AZURE,
-  Cesium.Color.BEIGE,
-  Cesium.Color.BISQUE,
-  Cesium.Color.BLACK,
-  Cesium.Color.BLUE,
-  Cesium.Color.BLUEVIOLET,
-  Cesium.Color.BROWN,
-  Cesium.Color.CADETBLUE,
-  Cesium.Color.CHARTREUSE,
-  Cesium.Color.CHOCOLATE,
-  Cesium.Color.CORAL,
-  Cesium.Color.CORNFLOWERBLUE,
-  Cesium.Color.CORNSILK,
-  Cesium.Color.CRIMSON,
-  Cesium.Color.CYAN,
-  Cesium.Color.DARKGOLDENROD,
-  Cesium.Color.DARKGREEN,
-  Cesium.Color.DARKKHAKI,
-  Cesium.Color.DARKMAGENTA,
-  Cesium.Color.DARKOLIVEGREEN,
-  Cesium.Color.DARKORANGE,
-  Cesium.Color.DARKORCHID,
-  Cesium.Color.DARKRED,
-  Cesium.Color.DARKSALMON,
-  Cesium.Color.DARKSEAGREEN,
-  Cesium.Color.DARKSLATEBLUE,
-  Cesium.Color.DARKSLATEGREY,
-  Cesium.Color.DARKTURQUOISE,
-  Cesium.Color.DARKVIOLET,
-  Cesium.Color.DEEPPINK,
-  Cesium.Color.DEEPSKYBLUE,
-  Cesium.Color.DIMGREY,
-  Cesium.Color.DODGERBLUE,
-  Cesium.Color.FIREBRICK,
-  Cesium.Color.FLORALWHITE,
-  Cesium.Color.FORESTGREEN,
-  Cesium.Color.FUCHSIA,
-  Cesium.Color.GAINSBORO,
-  Cesium.Color.GHOSTWHITE,
-  Cesium.Color.GOLD,
-  Cesium.Color.GOLDENROD,
-  Cesium.Color.GREY,
-  Cesium.Color.GREENYELLOW,
-  Cesium.Color.HONEYDEW,
-  Cesium.Color.HOTPINK,
-  Cesium.Color.INDIGO,
-  Cesium.Color.IVORY,
-  Cesium.Color.KHAKI,
-  Cesium.Color.LAVENDER,
-  Cesium.Color.LAVENDERBLUSH,
-  Cesium.Color.LAWNGREEN,
-  Cesium.Color.LEMONCHIFFON,
-  Cesium.Color.LIGHTBLUE,
-  Cesium.Color.LIGHTCORAL,
-  Cesium.Color.LIGHTCYAN,
-  Cesium.Color.LIGHTGOLDENRODYELLOW,
-  Cesium.Color.LIGHTGREEN,
-  Cesium.Color.LIGHTPINK,
-  Cesium.Color.LIGHTSALMON,
-  Cesium.Color.LIGHTSEAGREEN,
-  Cesium.Color.LIGHTSKYBLUE,
-  Cesium.Color.LIGHTSLATEGREY,
-  Cesium.Color.LIGHTSTEELBLUE,
-  Cesium.Color.LIGHTYELLOW,
-  Cesium.Color.LIME,
-  Cesium.Color.LIMEGREEN,
-  Cesium.Color.LINEN,
-  Cesium.Color.MAGENTA,
-  Cesium.Color.MAROON,
-  Cesium.Color.MEDIUMAQUAMARINE,
-  Cesium.Color.MEDIUMBLUE,
-  Cesium.Color.MEDIUMORCHID,
-  Cesium.Color.MEDIUMPURPLE,
-  Cesium.Color.MEDIUMSEAGREEN,
-  Cesium.Color.MEDIUMSLATEBLUE,
-  Cesium.Color.MEDIUMSPRINGGREEN,
-  Cesium.Color.MEDIUMTURQUOISE,
-  Cesium.Color.MEDIUMVIOLETRED,
-  Cesium.Color.MIDNIGHTBLUE,
-  Cesium.Color.MINTCREAM,
-  Cesium.Color.MISTYROSE,
-  Cesium.Color.MOCCASIN,
-  Cesium.Color.NAVAJOWHITE,
-  Cesium.Color.NAVY,
-  Cesium.Color.OLDLACE,
-  Cesium.Color.OLIVE,
-  Cesium.Color.OLIVEDRAB,
-  Cesium.Color.ORANGE,
-  Cesium.Color.ORANGERED,
-  Cesium.Color.ORCHID,
-  Cesium.Color.PALEGOLDENROD,
-  Cesium.Color.PALEGREEN,
-  Cesium.Color.PALETURQUOISE,
-  Cesium.Color.PALEVIOLETRED,
-  Cesium.Color.PAPAYAWHIP,
-  Cesium.Color.PEACHPUFF,
-  Cesium.Color.PERU,
-  Cesium.Color.PINK,
-  Cesium.Color.PLUM,
-  Cesium.Color.POWDERBLUE,
-  Cesium.Color.PURPLE,
-  Cesium.Color.REBECCAPURPLE,
-  Cesium.Color.RED,
-  Cesium.Color.ROSYBROWN,
-  Cesium.Color.ROYALBLUE,
-  Cesium.Color.SADDLEBROWN,
-  Cesium.Color.SALMON,
-  Cesium.Color.SANDYBROWN,
-  Cesium.Color.SEAGREEN,
-  Cesium.Color.SEASHELL,
-  Cesium.Color.SIENNA,
-  Cesium.Color.SILVER,
-  Cesium.Color.SKYBLUE,
-  Cesium.Color.SLATEBLUE,
-  Cesium.Color.SLATEGREY,
-  Cesium.Color.SNOW,
-  Cesium.Color.SPRINGGREEN,
-  Cesium.Color.STEELBLUE,
-  Cesium.Color.TAN,
-  Cesium.Color.TEAL,
-  Cesium.Color.THISTLE,
-  Cesium.Color.TOMATO,
-  Cesium.Color.TURQUOISE,
-  Cesium.Color.VIOLET,
-  Cesium.Color.WHEAT,
-  Cesium.Color.WHITE,
-  Cesium.Color.WHITESMOKE,
-  Cesium.Color.YELLOW,
-  Cesium.Color.YELLOWGREEN,
-    ];
-      if (this.K_number > 0 && this.radioPos.length > 0) {
-          try {
-               const response = await axios.post(`http://localhost:8092/Km`, {
+    const temp=[]
+    this.radioPos.forEach(item => temp.push([item.lat, item.lon]));
+
+    try {
+               const response = await axios.post(`${this.$store.state.serverurl}/DBSCAN`, {
                         data: temp,
-                        K: Number(this.K_number)
+                        eps: Number(this.eps),
+                        min_samples: Number(this.minPts)
                  }, {
                  headers: {
                       'Content-Type': 'application/json' 
@@ -655,7 +663,7 @@ export default {
                 this.clusters =await response.data;
                 console.log('Clusters:', this.clusters);
                 
-                for(let i = 0; i < this.clusters.length; i++) {
+                for(let i = 0; i < this.K_number; i++) {
                     if(this.clusters[i].length <=1){
                        continue
                       }
@@ -675,7 +683,7 @@ export default {
                       Cesium.Cartesian3.fromDegrees(minLon, maxLat), 
   ];
                 boundingBoxPoints.push(boundingBoxPoints[0]);
-                const color = colorPalette[i % colorPalette.length].withAlpha(0.5);
+                const color = this.colorPalette[i % this.colorPalette.length].withAlpha(0.5);
                 const boundingPolygon = new Cesium.PolygonGraphics({
                   hierarchy: boundingBoxPoints,
                   material: color, 
@@ -688,9 +696,74 @@ export default {
                 });
                 this.currentPolygonEntity.push(entity);
 }
+      } catch (error) {
+      console.error('获取聚类数据时出错:', error);
+      alert('获取聚类数据失败，请检查网络或服务器状态');
+    }
+    },
+  async K_means() {
+      if (this.currentPolygonEntity) {
+      if (Array.isArray(this.currentPolygonEntity)) {
+        this.currentPolygonEntity.forEach(entity => {
+          this.viewer.entities.remove(entity);
+        });
+      } else {
+        this.viewer.entities.remove(this.currentPolygonEntity);
+      }
+    }
+    if(this.K_number<1){  
+      alert("请输入正确的聚类数")
+      return 
+    }
+      const temp=[]
+    this.radioPos.forEach(item => temp.push([item.lat, item.lon]));
+      if (this.K_number > 0 && this.radioPos.length > 0) {
+          try {
+               const response = await axios.post(`${this.$store.state.serverurl}/Km`, {
+                        data: temp,
+                        K: Number(this.K_number)
+                 }, {
+                 headers: {
+                      'Content-Type': 'application/json' 
+                 }
+                 });
+                this.clusters =await response.data;
+                console.log('Clusters:', this.clusters);
+                
+                for(let i = 0; i < this.K_number; i++) {
+                    if(this.clusters[i].length <=1){
+                       continue
+                      }
+                let minLon = Infinity, maxLon = -Infinity;
+                let minLat = Infinity, maxLat = -Infinity;
+                this.clusters[i].forEach(point => {
+                minLon = Math.min(minLon, point[1]);
+                maxLon = Math.max(maxLon, point[1]);
+                minLat = Math.min(minLat, point[0]);
+                maxLat = Math.max(maxLat, point[0]);
+                });
 
-      
-    } catch (error) {
+                const boundingBoxPoints = [
+                      Cesium.Cartesian3.fromDegrees(minLon, minLat),
+                      Cesium.Cartesian3.fromDegrees(maxLon, minLat), 
+                      Cesium.Cartesian3.fromDegrees(maxLon, maxLat), 
+                      Cesium.Cartesian3.fromDegrees(minLon, maxLat), 
+  ];
+                boundingBoxPoints.push(boundingBoxPoints[0]);
+                const color = this.colorPalette[i % this.colorPalette.length].withAlpha(0.5);
+                const boundingPolygon = new Cesium.PolygonGraphics({
+                  hierarchy: boundingBoxPoints,
+                  material: color, 
+                  outline: true,
+                  outlineColor: Cesium.Color.BLACK,
+                  outlineWidth: 2
+                });
+                const entity = this.viewer.entities.add({
+                         polygon: boundingPolygon
+                });
+                this.currentPolygonEntity.push(entity);
+}
+      } catch (error) {
       console.error('获取聚类数据时出错:', error);
       alert('获取聚类数据失败，请检查网络或服务器状态');
     }
@@ -1286,7 +1359,7 @@ export default {
             ),
             material: new Cesium.ImageMaterialProperty({
               image:
-                'http://127.0.0.1:8092/resultimages/result_img' + i + '.png', // 替换为你自己的图片路径
+                '${this.$store.state.serverurl}/resultimages/result_img' + i + '.png', // 替换为你自己的图片路径
               color: Cesium.Color.WHITE.withAlpha(0.6), //0.2
               transparent: true
             })
