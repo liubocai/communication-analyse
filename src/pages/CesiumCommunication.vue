@@ -138,7 +138,7 @@
         overflow-x:auto ;
         font-size: small;
         background-color: #19284b;
-      " row-key="index" default-expand-all stripe size="mini" @selection-change="handleSelectionChange2">
+      " row-key="index" default-expand-all stripe size="mini" @selection-change="handleSelectionChange2" ref="multipleTable_planRadio">
       <el-table-column type="selection" width="55" :selectable="selectable2" />
       <el-table-column label="序号" width="50" align="center" type="index">
       </el-table-column>
@@ -907,7 +907,7 @@ export default {
     async testnet() {
       var that = this;
       await axios
-        .get(`${this.$store.state.serverurl}/testtcp?`)
+        .get(`${this.$store.state.serverurl}/testtcp2`)
         .then((res) => {
           // console.log(res);
           that.otherRadioIpGpsList = res.data;
@@ -953,11 +953,12 @@ export default {
       if (this.rectangleEntities.length == 0 || this.planRadio.length == 0) {
         return;
       }
-      var selectedRows = val.map((row) => this.radioPos.indexOf(row));
+      console.log("rectangles", selectedRows)
+      var selectedRows = val.map((row) => this.planRadio.indexOf(row));
       var lenOfAll = this.rectangleEntities.length;
-      var lenOfPlan = this.planRadio.length;
-      for (var i = lenOfAll - lenOfPlan; i < lenOfAll; i++) {
-        let rowIdx = i - (lenOfAll - lenOfPlan);
+      var lenOfRadio = this.radioPos.length;
+      for (var i = lenOfRadio; i < lenOfAll; i++) {
+        let rowIdx = i - lenOfRadio;
         if (selectedRows.indexOf(rowIdx) !== -1) {
           this.rectangleEntities[i].show = true;
         } else {
@@ -986,6 +987,7 @@ export default {
       this.planRadio = [];
       this.lines = [];
       this.rectangles = [];
+      this.radioPos = [];
       this.ReloadAllMarkers();
       this.isAnalying = false;
       this.isRunning = false;
@@ -1256,6 +1258,13 @@ export default {
       for (var i = 0; i < size; i++) {
         this.rectangleEntities[i].show = !isAnyShow;
       }
+      //更新表格选择状态
+      for (var i = 0; i < this.radioPos.length; i++) {
+        this.$refs.multipleTable.toggleRowSelection(this.radioPos[i], !isAnyShow);
+      }
+      for (var i = 0; i < this.planRadio.length; i++) {
+        this.$refs.multipleTable_planRadio.toggleRowSelection(this.planRadio[i], !isAnyShow);
+      }
     },
 
     //添加标记点
@@ -1352,6 +1361,7 @@ export default {
           })
         );
       }
+      console.log("rectangles", this.rectangles.length)
       for (let i = 0; i < this.rectangles.length; i++) {
         var rectCoor = this.rectangles[i];
         let x = this.viewer.entities.add({
@@ -1548,7 +1558,9 @@ export default {
 
     printDevOnlineList() {
       // console.log("selection", this.radioLinkTupu);
-      console.log("print", this.radioPos);
+      console.log("rectangles", this.rectangles);
+      console.log("rectangles", this.rectangleEntities);
+
       
       // console.log('dev print3 deviceOnlineGpsList', this.deviceOnlineGpsList);
       // console.log('dev print3 devOnlineListName', this.devOnlineListName);
@@ -1609,7 +1621,7 @@ export default {
       };
       var that = this;
       sendData = JSON.stringify(sendData);
-
+      this.setRowSelected();
       axios
         .post(`${this.$store.state.serverurl}/analysePlanRadio?`, {
           data: sendData
@@ -1637,7 +1649,13 @@ export default {
             //绘制通信线
             that.lines = res.data.lines;
             that.rectangles = res.data.rectangles;
+            //表格提前表为选中
+            for (var i = 0; i < res.data.plan.length; i++) {
+              that.$refs.multipleTable_planRadio.toggleRowSelection(that.planRadio[i], true);
+            }
+            //渲染图标
             that.updateResultImgAndMarkers();
+            //还锁
             that.isAnalying = false;
           } else {
             that.isRunning = false;
@@ -1851,9 +1869,9 @@ export default {
     // 	}
     // })
     // // //开启动态更新坐标函数
-    // this.printDevOnlineList();
+    this.printDevOnlineList();
     // // 开启动态上传坐标进行态势感知函数
-    this.selectAndUpload();
+    // this.selectAndUpload();
   },
 
   destroyed() { }
