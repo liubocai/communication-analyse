@@ -907,7 +907,7 @@ export default {
     async testnet() {
       var that = this;
       await axios
-        .get(`${this.$store.state.serverurl}/testtcp2`)
+        .get(`${this.$store.state.serverurl}/testtcp3`)
         .then((res) => {
           // console.log(res);
           that.otherRadioIpGpsList = res.data;
@@ -1429,6 +1429,8 @@ export default {
             that.isRunning = false;
             that.resultImgName = res.data.url;
             that.rectangles = res.data.rectangles;
+            that.setRowSelected();
+
             that.updateResultImgAndMarkers();
           } else {
             this.$message({
@@ -1532,7 +1534,7 @@ export default {
       for (let key in tempPosDad) {
         var tpos = tempPosDad[key];
         if (
-          (tpos != null) &
+          (tpos != null) & 
           (Object.keys(tpos).length !== 0) &
           (tpos.lat !== 0) &
           (tpos.lng !== 0)
@@ -1871,7 +1873,7 @@ export default {
     // // //开启动态更新坐标函数
     this.printDevOnlineList();
     // // 开启动态上传坐标进行态势感知函数
-    // this.selectAndUpload();
+    this.selectAndUpload();
   },
 
   destroyed() { }
